@@ -3,109 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morare — Daily Ritual</title>
+    <title>Morare — Space for Soul</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body { 
-            background-color: #fdfcfb; 
-            color: #2d2d2d;
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
-        }
-        h1, h2, .serif { font-family: 'Cormorant Garamond', serif; }
-        .fade-in { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
+        body { background-color: #fcfaf8; color: #2d2d2d; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .serif { font-family: 'Cormorant Garamond', serif; }
+        .fade-in { opacity: 0; transform: translateY(20px); transition: all 1s ease-out; }
         .fade-in.visible { opacity: 1; transform: translateY(0); }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(230, 230, 230, 0.5);
-        }
+        
+        /* Side Menu Logic */
+        #side-menu { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        #side-menu.open { transform: translateX(0); }
+        .overlay { display: none; background: rgba(0,0,0,0.1); backdrop-filter: blur(4px); }
+        .overlay.active { display: block; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #fcfaf8; }
+        ::-webkit-scrollbar-thumb { background: #e2e2e2; border-radius: 10px; }
     </style>
 </head>
 <body class="max-w-screen-sm mx-auto px-6">
 
+    <nav class="fixed top-0 left-0 right-0 z-40 flex justify-between items-center px-8 py-6 max-w-screen-sm mx-auto">
+        <div class="text-xl serif font-semibold tracking-tighter italic">Morare</div>
+        <button onclick="toggleMenu()" class="p-2 hover:bg-gray-100 rounded-full transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </nav>
+
+    <div id="overlay" class="fixed inset-0 z-40 overlay" onclick="toggleMenu()"></div>
+    <div id="side-menu" class="fixed top-0 right-0 h-full w-80 bg-white z-50 shadow-2xl p-8 overflow-y-auto">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="serif text-3xl">Profile</h2>
+            <button onclick="toggleMenu()" class="text-gray-400">&times;</button>
+        </div>
+
+        <div id="account-area">
+            <div id="logged-out-view">
+                <p class="text-sm text-gray-500 mb-6">Create an account to sync your daily reflections across devices.</p>
+                <input type="text" id="username" placeholder="Full Name" class="w-full mb-3 p-3 border-b border-gray-100 text-sm focus:outline-none focus:border-black">
+                <input type="email" id="email" placeholder="Email Address" class="w-full mb-6 p-3 border-b border-gray-100 text-sm focus:outline-none focus:border-black">
+                <button onclick="createAccount()" class="w-full bg-black text-white py-3 rounded-lg text-sm font-medium">Create Account</button>
+            </div>
+            <div id="logged-in-view" class="hidden">
+                <div class="flex items-center gap-4 mb-10 p-4 bg-orange-50 rounded-xl">
+                    <div class="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center serif text-xl" id="user-initial">M</div>
+                    <div>
+                        <p class="font-semibold text-sm" id="display-name">User Name</p>
+                        <p class="text-xs text-gray-500">90-Day Free Tier</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-8 border-gray-50">
+
+        <div>
+            <h3 class="uppercase tracking-widest text-[10px] font-bold text-gray-400 mb-4">Your Reflections</h3>
+            <div id="archive-list" class="space-y-4 text-sm">
+                <p class="text-gray-400 italic">No reflections saved yet.</p>
+            </div>
+        </div>
+    </div>
+
     <header class="h-screen flex flex-col justify-center items-center text-center">
-        <span class="uppercase tracking-widest text-xs mb-4 text-gray-400">February 7, 2026</span>
-        <h1 class="text-6xl mb-2">Kintsugi</h1>
-        <p class="serif italic text-xl text-gray-500">The beauty of the break.</p>
-        <div class="mt-20 animate-bounce text-gray-300">↓</div>
+        <span class="uppercase tracking-widest text-[10px] mb-4 text-gray-400 font-bold">Saturday, Feb 7</span>
+        <h1 class="text-7xl mb-4 serif">Kintsugi</h1>
+        <p class="serif italic text-2xl text-gray-400">The beauty of the break.</p>
+        <div class="mt-24 animate-pulse text-gray-300">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 14l-7 7m0 0l-7-7m7 7V3" stroke-width="1"/></svg>
+        </div>
     </header>
 
-    <section class="min-h-[60vh] py-20 fade-in">
-        <span class="text-xs uppercase tracking-widest text-orange-800 font-bold">History</span>
-        <h2 class="text-3xl mt-4 mb-6">15th Century Japan</h2>
-        <p class="text-lg leading-relaxed text-gray-600">
-            Shogun Ashikaga Yoshimitsu sent a damaged tea bowl back to China for repairs. It returned held together with ugly metal staples. 
-            Japanese craftsmen found a better way: filling the cracks with gold.
+    <section class="min-h-[70vh] py-20 fade-in">
+        <span class="text-[10px] uppercase tracking-[0.2em] text-orange-800 font-bold">The History</span>
+        <h2 class="text-4xl serif mt-6 mb-8 leading-tight">15th Century Japan</h2>
+        <p class="text-xl leading-relaxed text-gray-600 font-light">
+            Shogun Ashikaga Yoshimitsu sent a damaged tea bowl back to China. It returned with ugly metal staples. 
+            Japanese craftsmen found a better way: filling the cracks with <span class="italic text-orange-900">gold</span>.
         </p>
-        <details class="mt-4 text-sm text-gray-400 cursor-pointer">
-            <summary>Deepen your curiosity</summary>
-            <p class="mt-2 p-4 glass-card rounded-lg">This birthed a philosophy where repair is not something to hide, but a testament to the object's history and resilience. The "scar" becomes the most valuable part.</p>
-        </details>
     </section>
 
-    <section class="min-h-[60vh] py-20 fade-in">
-        <span class="text-xs uppercase tracking-widest text-orange-800 font-bold">The Word</span>
-        <blockquote class="text-4xl serif italic mt-8 leading-tight">
-            "The world breaks everyone and afterward many are strong at the broken places."
-        </blockquote>
-        <p class="mt-4 text-gray-500">— Ernest Hemingway</p>
-    </section>
-
-    <section class="min-h-screen py-20 fade-in">
-        <div class="p-8 glass-card rounded-2xl shadow-sm border border-gray-100">
-            <span class="text-xs uppercase tracking-widest text-orange-800 font-bold text-center block mb-8">The Ritual</span>
+    <section class="min-h-screen py-20 fade-in flex flex-col justify-center">
+        <div class="p-10 bg-white rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-orange-100"></div>
+            <h3 class="text-3xl serif mb-10 text-center leading-snug">What is a "crack" in your life that you are learning to fill with gold?</h3>
             
-            <p class="text-center italic text-gray-500 mb-10">
-                Close your eyes. Identify one place in your body holding tension. Breathe into it, then exhale it out.
-            </p>
-
-            <h3 class="text-2xl serif mb-6 text-center">What is a "crack" in your life that you are learning to fill with gold?</h3>
+            <textarea id="journalEntry" class="w-full h-80 p-0 bg-transparent outline-none resize-none text-xl leading-relaxed serif" placeholder="Write your truth here..."></textarea>
             
-            <textarea id="journalEntry" class="w-full h-64 p-4 bg-transparent border-b border-gray-200 focus:border-orange-800 outline-none resize-none text-lg leading-relaxed" placeholder="Begin writing..."></textarea>
-            
-            <div class="flex justify-between items-center mt-6">
-                <span id="saveStatus" class="text-xs text-gray-400 italic">Drafting...</span>
-                <button onclick="saveEntry()" class="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition">Save Entry</button>
+            <div class="flex flex-col sm:flex-row gap-4 justify-between items-center mt-12 pt-8 border-t border-gray-50">
+                <span id="saveStatus" class="text-[11px] text-gray-400 italic uppercase tracking-wider">Drafting...</span>
+                <div class="flex gap-3">
+                    <button onclick="exportPDF()" class="text-gray-400 hover:text-black transition text-sm">PDF</button>
+                    <button onclick="saveEntry()" class="bg-black text-white px-10 py-4 rounded-full hover:shadow-lg transition-all active:scale-95 text-sm font-semibold tracking-wide">Save Reflection</button>
+                </div>
             </div>
         </div>
     </section>
 
-    <footer class="py-20 text-center text-xs text-gray-300">
-        Morare — Space for the soul.
-    </footer>
+    <div id="pdf-content" style="display: none;">
+        <div style="font-family: 'Georgia', serif; padding: 60px; line-height: 1.8;">
+            <p style="text-transform: uppercase; letter-spacing: 3px; font-size: 10px; color: #aaa;">Morare — Feb 7, 2026</p>
+            <h1 style="font-size: 48px; margin-top: 10px;">Kintsugi</h1>
+            <p style="border-left: 2px solid gold; padding-left: 20px; font-style: italic; color: #666; margin: 40px 0;">
+                Prompt: What is a "crack" in your life that you are learning to fill with gold?
+            </p>
+            <div id="pdf-text-body" style="font-size: 16px; white-space: pre-wrap;"></div>
+        </div>
+    </div>
 
     <script>
-        // Intersection Observer for scroll animations
+        // Scroll Animations
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) entry.target.classList.add('visible');
             });
         }, { threshold: 0.1 });
-
         document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-        // Loading saved text
+        // Side Menu Toggle
+        function toggleMenu() {
+            document.getElementById('side-menu').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        // Account Simulation
+        function createAccount() {
+            const name = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            if(!name || !email) return alert("Please fill in your details.");
+            
+            const user = { name, email };
+            localStorage.setItem('morare_user', JSON.stringify(user));
+            updateAuthUI(user);
+        }
+
+        function updateAuthUI(user) {
+            if(user) {
+                document.getElementById('logged-out-view').classList.add('hidden');
+                document.getElementById('logged-in-view').classList.remove('hidden');
+                document.getElementById('display-name').innerText = user.name;
+                document.getElementById('user-initial').innerText = user.name.charAt(0);
+            }
+        }
+
+        // Save & Archive Logic
+        function saveEntry() {
+            const text = document.getElementById('journalEntry').value;
+            const date = "Feb 7, 2026";
+            if(!text) return;
+
+            localStorage.setItem('morare_entry_2026-02-07', text);
+            document.getElementById('saveStatus').innerText = "Stored in Archive";
+            updateArchive(date, text);
+        }
+
+        function updateArchive(date, text) {
+            const list = document.getElementById('archive-list');
+            list.innerHTML = `
+                <div class="p-4 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition" onclick="toggleMenu()">
+                    <p class="font-bold text-[10px] uppercase text-orange-800">${date}</p>
+                    <p class="truncate text-gray-500 mt-1">${text.substring(0, 40)}...</p>
+                </div>
+            `;
+        }
+
+        function exportPDF() {
+            const text = document.getElementById('journalEntry').value;
+            if(!text) return alert("Write something first.");
+            document.getElementById('pdf-text-body').innerText = text;
+            const element = document.getElementById('pdf-content');
+            element.style.display = 'block';
+            html2pdf().from(element).set({
+                margin: 1, filename: 'Morare_Reflection.pdf', jsPDF: { unit: 'in', format: 'letter' }
+            }).save().then(() => element.style.display = 'none');
+        }
+
+        // Load Initial Data
         window.onload = () => {
+            const savedUser = JSON.parse(localStorage.getItem('morare_user'));
+            if(savedUser) updateAuthUI(savedUser);
+
             const savedText = localStorage.getItem('morare_entry_2026-02-07');
             if (savedText) {
                 document.getElementById('journalEntry').value = savedText;
-                document.getElementById('saveStatus').innerText = "Last saved: " + new Date().toLocaleTimeString();
+                updateArchive("Feb 7, 2026", savedText);
             }
         };
-
-        // Saving logic
-        function saveEntry() {
-            const text = document.getElementById('journalEntry').value;
-            localStorage.setItem('morare_entry_2026-02-07', text);
-            document.getElementById('saveStatus').innerText = "Saved to your device.";
-            
-            // Subtle visual feedback
-            const btn = document.querySelector('button');
-            btn.innerText = "Saved";
-            setTimeout(() => btn.innerText = "Save Entry", 2000);
-        }
     </script>
 </body>
 </html>
