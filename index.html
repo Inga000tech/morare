@@ -1,87 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Morare</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: Georgia, serif;
-      background: #f7f5f2;
-      color: #2c2c2c;
-      margin: 0;
-      padding: 24px;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 680px;
-      margin: auto;
-    }
-    h1 {
-      font-size: 28px;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .section {
-      margin-bottom: 48px;
-    }
-    .label {
-      font-size: 12px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      margin-bottom: 8px;
-    }
-    .box {
-      background: white;
-      padding: 18px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      border: none;
-      resize: vertical;
-      font-family: inherit;
-      font-size: 16px;
-      outline: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morare</title>
+<style>
+  body {
+    font-family: Georgia, serif;
+    background: #f7f5f2;
+    color: #2c2c2c;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.6;
+  }
+  .container { max-width: 680px; margin: auto; }
+  h1 { text-align: center; margin-bottom: 40px; }
+  .section { margin-bottom: 48px; }
+  .label { font-size: 12px; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
+  .box { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+  textarea { width: 100%; min-height: 120px; font-family: inherit; font-size: 16px; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ccc; }
+  button { margin-top: 12px; padding: 8px 14px; border-radius: 6px; border: none; background: #333; color: white; cursor: pointer; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Morare</h1>
+<div class="container">
+<h1>Morare</h1>
 
-    <div class="section">
-      <div class="label">On this day</div>
-      <div class="box">
-        <strong>February 7, 1989</strong><br>
-        The last barbed-wire fences between Hungary and Austria were quietly dismantled.
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">Theme of the day</div>
-      <div class="box">
-        Threshold
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">Reflection</div>
-      <div class="box">
-        Before crossing, there is always stillness.
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="label">Question</div>
-      <div class="box">
-        <textarea placeholder="What threshold are you standing in front of right now?"></textarea>
-      </div>
-    </div>
-
+<!-- Day 1 -->
+<section id="day1" class="section">
+  <div class="label">On this day</div>
+  <div class="box">
+    <details>
+      <summary><strong>February 7 — Barbed-Wire Fences Dismantled</strong></summary>
+      <p>The last barbed-wire fences between Hungary and Austria were quietly dismantled. Families whispered about crossing, and hope quietly spread.</p>
+    </details>
   </div>
+
+  <div class="label">Theme of the day</div>
+  <div class="box">Threshold</div>
+
+  <div class="label">Reflection</div>
+  <div class="box">
+    <details>
+      <summary>Before crossing, there is always stillness.</summary>
+      <p>Standing at the threshold, take a deep breath. Pause. Feel the weight of the moment, notice your heartbeat, and honor your courage. This is where growth begins.</p>
+    </details>
+  </div>
+
+  <div class="label">Quote of the day</div>
+  <div class="box">“He who has a why to live can bear almost any how.” — Friedrich Nietzsche</div>
+
+  <div class="label">Question of the day</div>
+  <div class="box">
+    <textarea placeholder="What threshold are you standing in front of right now?"></textarea>
+  </div>
+
+  <button onclick="saveEntry('day1')">Save my writing</button>
+</section>
+
+<!-- Navigation -->
+<button onclick="document.getElementById('day1').scrollIntoView({behavior:'smooth'})">Go to Day 1</button>
+
+</div>
+
+<script>
+  // Save and load locally
+  function saveEntry(dayId) {
+    const textarea = document.querySelector(`#${dayId} textarea`);
+    if(textarea.value.trim() === '') { alert("Please write something first."); return; }
+    localStorage.setItem(dayId+'_entry', textarea.value);
+    alert("Saved locally!");
+  }
+
+  // Load existing entries
+  document.querySelectorAll('textarea').forEach((ta, index) => {
+    const dayId = 'day'+(index+1);
+    ta.value = localStorage.getItem(dayId+'_entry') || '';
+  });
+
+  // Daily refresh logic (client-side)
+  const now = new Date();
+  const lastDate = localStorage.getItem('morare_lastDate');
+  const today = now.toDateString();
+  if(lastDate !== today){
+    localStorage.setItem('morare_lastDate', today);
+    // Logic to show only today’s section, hide previous ones if needed
+    document.querySelectorAll('section').forEach((sec, idx)=>{
+      if(idx!==0) sec.style.display='none';
+    });
+  }
+
+</script>
 </body>
 </html>
