@@ -1,95 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morare</title>
-<style>
-  body {
-    font-family: Georgia, serif;
-    background: #f7f5f2;
-    color: #2c2c2c;
-    margin: 0;
-    padding: 24px;
-    line-height: 1.6;
-  }
-  .container { max-width: 680px; margin: auto; }
-  h1 { text-align: center; margin-bottom: 40px; }
-  .section { margin-bottom: 48px; }
-  .label { font-size: 12px; text-transform: uppercase; opacity: 0.6; margin-bottom: 8px; }
-  .box { background: white; padding: 18px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
-  textarea { width: 100%; min-height: 120px; font-family: inherit; font-size: 16px; padding: 12px; margin-top: 8px; border-radius: 8px; border: 1px solid #ccc; }
-  button { margin-top: 12px; padding: 8px 14px; border-radius: 6px; border: none; background: #333; color: white; cursor: pointer; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morare — Daily Ritual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #fdfcfb; 
+            color: #2d2d2d;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        h1, h2, .serif { font-family: 'Cormorant Garamond', serif; }
+        .fade-in { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(230, 230, 230, 0.5);
+        }
+    </style>
 </head>
-<body>
-<div class="container">
-<h1>Morare</h1>
+<body class="max-w-screen-sm mx-auto px-6">
 
-<!-- Day 1 -->
-<section id="day1" class="section">
-  <div class="label">On this day</div>
-  <div class="box">
-    <details>
-      <summary><strong>February 7 — Barbed-Wire Fences Dismantled</strong></summary>
-      <p>The last barbed-wire fences between Hungary and Austria were quietly dismantled. Families whispered about crossing, and hope quietly spread.</p>
-    </details>
-  </div>
+    <header class="h-screen flex flex-col justify-center items-center text-center">
+        <span class="uppercase tracking-widest text-xs mb-4 text-gray-400">February 7, 2026</span>
+        <h1 class="text-6xl mb-2">Kintsugi</h1>
+        <p class="serif italic text-xl text-gray-500">The beauty of the break.</p>
+        <div class="mt-20 animate-bounce text-gray-300">↓</div>
+    </header>
 
-  <div class="label">Theme of the day</div>
-  <div class="box">Threshold</div>
+    <section class="min-h-[60vh] py-20 fade-in">
+        <span class="text-xs uppercase tracking-widest text-orange-800 font-bold">History</span>
+        <h2 class="text-3xl mt-4 mb-6">15th Century Japan</h2>
+        <p class="text-lg leading-relaxed text-gray-600">
+            Shogun Ashikaga Yoshimitsu sent a damaged tea bowl back to China for repairs. It returned held together with ugly metal staples. 
+            Japanese craftsmen found a better way: filling the cracks with gold.
+        </p>
+        <details class="mt-4 text-sm text-gray-400 cursor-pointer">
+            <summary>Deepen your curiosity</summary>
+            <p class="mt-2 p-4 glass-card rounded-lg">This birthed a philosophy where repair is not something to hide, but a testament to the object's history and resilience. The "scar" becomes the most valuable part.</p>
+        </details>
+    </section>
 
-  <div class="label">Reflection</div>
-  <div class="box">
-    <details>
-      <summary>Before crossing, there is always stillness.</summary>
-      <p>Standing at the threshold, take a deep breath. Pause. Feel the weight of the moment, notice your heartbeat, and honor your courage. This is where growth begins.</p>
-    </details>
-  </div>
+    <section class="min-h-[60vh] py-20 fade-in">
+        <span class="text-xs uppercase tracking-widest text-orange-800 font-bold">The Word</span>
+        <blockquote class="text-4xl serif italic mt-8 leading-tight">
+            "The world breaks everyone and afterward many are strong at the broken places."
+        </blockquote>
+        <p class="mt-4 text-gray-500">— Ernest Hemingway</p>
+    </section>
 
-  <div class="label">Quote of the day</div>
-  <div class="box">“He who has a why to live can bear almost any how.” — Friedrich Nietzsche</div>
+    <section class="min-h-screen py-20 fade-in">
+        <div class="p-8 glass-card rounded-2xl shadow-sm border border-gray-100">
+            <span class="text-xs uppercase tracking-widest text-orange-800 font-bold text-center block mb-8">The Ritual</span>
+            
+            <p class="text-center italic text-gray-500 mb-10">
+                Close your eyes. Identify one place in your body holding tension. Breathe into it, then exhale it out.
+            </p>
 
-  <div class="label">Question of the day</div>
-  <div class="box">
-    <textarea placeholder="What threshold are you standing in front of right now?"></textarea>
-  </div>
+            <h3 class="text-2xl serif mb-6 text-center">What is a "crack" in your life that you are learning to fill with gold?</h3>
+            
+            <textarea id="journalEntry" class="w-full h-64 p-4 bg-transparent border-b border-gray-200 focus:border-orange-800 outline-none resize-none text-lg leading-relaxed" placeholder="Begin writing..."></textarea>
+            
+            <div class="flex justify-between items-center mt-6">
+                <span id="saveStatus" class="text-xs text-gray-400 italic">Drafting...</span>
+                <button onclick="saveEntry()" class="bg-black text-white px-8 py-3 rounded-full hover:bg-gray-800 transition">Save Entry</button>
+            </div>
+        </div>
+    </section>
 
-  <button onclick="saveEntry('day1')">Save my writing</button>
-</section>
+    <footer class="py-20 text-center text-xs text-gray-300">
+        Morare — Space for the soul.
+    </footer>
 
-<!-- Navigation -->
-<button onclick="document.getElementById('day1').scrollIntoView({behavior:'smooth'})">Go to Day 1</button>
+    <script>
+        // Intersection Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
 
-</div>
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
-<script>
-  // Save and load locally
-  function saveEntry(dayId) {
-    const textarea = document.querySelector(`#${dayId} textarea`);
-    if(textarea.value.trim() === '') { alert("Please write something first."); return; }
-    localStorage.setItem(dayId+'_entry', textarea.value);
-    alert("Saved locally!");
-  }
+        // Loading saved text
+        window.onload = () => {
+            const savedText = localStorage.getItem('morare_entry_2026-02-07');
+            if (savedText) {
+                document.getElementById('journalEntry').value = savedText;
+                document.getElementById('saveStatus').innerText = "Last saved: " + new Date().toLocaleTimeString();
+            }
+        };
 
-  // Load existing entries
-  document.querySelectorAll('textarea').forEach((ta, index) => {
-    const dayId = 'day'+(index+1);
-    ta.value = localStorage.getItem(dayId+'_entry') || '';
-  });
-
-  // Daily refresh logic (client-side)
-  const now = new Date();
-  const lastDate = localStorage.getItem('morare_lastDate');
-  const today = now.toDateString();
-  if(lastDate !== today){
-    localStorage.setItem('morare_lastDate', today);
-    // Logic to show only today’s section, hide previous ones if needed
-    document.querySelectorAll('section').forEach((sec, idx)=>{
-      if(idx!==0) sec.style.display='none';
-    });
-  }
-
-</script>
+        // Saving logic
+        function saveEntry() {
+            const text = document.getElementById('journalEntry').value;
+            localStorage.setItem('morare_entry_2026-02-07', text);
+            document.getElementById('saveStatus').innerText = "Saved to your device.";
+            
+            // Subtle visual feedback
+            const btn = document.querySelector('button');
+            btn.innerText = "Saved";
+            setTimeout(() => btn.innerText = "Save Entry", 2000);
+        }
+    </script>
 </body>
 </html>
