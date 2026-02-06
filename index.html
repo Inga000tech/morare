@@ -1,298 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morare — Daily Ritual</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Base Design System */
-        :root {
-            --paper: #fcfaf8;
-            --ink: #2d2d2d;
-        }
-        body { 
-            background-color: var(--paper); 
-            color: var(--ink); 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden; /* Prevent horizontal scroll */
-        }
-        .serif { font-family: 'Cormorant Garamond', serif; }
-        
-        /* Simpler Animation: Content is VISIBLE by default */
-        .reveal-on-scroll {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1s ease-out;
-        }
-        .reveal-on-scroll.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Morare</title>
 
-        /* Side Menu Transition */
-        #side-menu { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        #side-menu.open { transform: translateX(0); }
-        
-        /* Tabs styling */
-        .tab-btn.active { color: black; border-bottom: 2px solid black; }
-        .tab-btn { color: #999; border-bottom: 2px solid transparent; }
-    </style>
+<style>
+:root {
+  --bg: #f7f5f2;
+  --card: #ffffff;
+  --ink: #2c2c2c;
+  --muted: #777;
+  --pause: #eceae6;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* ---------- LAYOUT ---------- */
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+  padding: 48px 24px;
+}
+
+.container {
+  max-width: 680px;
+  margin: auto;
+}
+
+/* ---------- SIDE MENU ---------- */
+
+aside {
+  width: 260px;
+  background: #111;
+  color: #fff;
+  padding: 24px;
+}
+
+aside h2 {
+  font-size: 18px;
+  margin-bottom: 24px;
+}
+
+.tab {
+  cursor: pointer;
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
+.tab.active {
+  opacity: 1;
+  font-weight: bold;
+}
+
+.reflection-card {
+  background: #222;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button.signout {
+  margin-top: 32px;
+  width: 100%;
+  padding: 10px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* ---------- CONTENT ---------- */
+
+h1 {
+  text-align: center;
+  margin-bottom: 64px;
+  font-size: 42px;
+}
+
+.section {
+  margin-bottom: 64px;
+}
+
+.label {
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+
+.card {
+  background: var(--card);
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+  font-size: 18px;
+}
+
+/* Quote styling */
+.quote {
+  text-align: center;
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+/* Expandable */
+details summary {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Grounding block */
+.pause {
+  background: var(--pause);
+  padding: 32px;
+  border-radius: 16px;
+  font-style: italic;
+}
+
+/* Journal textarea */
+textarea {
+  width: 100%;
+  min-height: 200px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  line-height: 1.6;
+  resize: vertical;
+
+  /* lined paper effect */
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      #fff,
+      #fff 28px,
+      #f1f1f1 29px
+    );
+}
+
+.save-btn {
+  margin-top: 16px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #111;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Hide sections when switching tabs */
+.hidden {
+  display: none;
+}
+</style>
 </head>
+
 <body>
 
-    <nav class="fixed top-0 left-0 w-full z-40 bg-[rgba(252,250,248,0.95)] backdrop-blur-md border-b border-gray-100">
-        <div class="max-w-screen-md mx-auto flex justify-between items-center px-6 py-4">
-            <div class="text-2xl serif font-semibold italic tracking-tight">Morare</div>
-            
-            <button onclick="toggleMenu()" class="group flex items-center gap-3 px-4 py-2 hover:bg-black hover:text-white rounded-full transition-all cursor-pointer">
-                <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">Menu</span>
-                <div class="space-y-1">
-                    <span class="block w-5 h-px bg-current"></span>
-                    <span class="block w-5 h-px bg-current"></span>
-                </div>
-            </button>
+<div class="app">
+
+  <!-- ---------- SIDE MENU ---------- -->
+  <aside>
+    <h2>Morare</h2>
+
+    <div class="tab active" id="tab-reflections">Reflections</div>
+    <div class="tab" id="tab-settings">Settings</div>
+
+    <div id="reflections-list"></div>
+
+    <button class="signout" onclick="signOut()">Sign out</button>
+  </aside>
+
+  <!-- ---------- MAIN ---------- -->
+  <main>
+    <div class="container">
+
+      <h1>Morare</h1>
+
+      <!-- WORD -->
+      <div class="section">
+        <div class="label">Word of the Day</div>
+        <div class="card">
+          <strong>Morare</strong><br/>
+          <em>Latin</em> — to pause, to linger, to remain intentionally.
         </div>
-    </nav>
+      </div>
 
-    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
-    
-    <aside id="side-menu" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl flex flex-col">
-        <div class="p-8 pb-0 flex justify-between items-center">
-            <h2 class="serif text-3xl italic">Dashboard</h2>
-            <button onclick="toggleMenu()" class="p-2 text-2xl hover:text-red-500 transition">&times;</button>
-        </div>
-
-        <div id="auth-section" class="px-8 mt-6">
-            <div id="view-guest" class="bg-gray-50 p-6 rounded-xl">
-                <p class="text-sm text-gray-500 mb-4">Save your reflections.</p>
-                <input type="text" id="input-name" placeholder="Your Name" class="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm mb-3 outline-none focus:border-black">
-                <button onclick="signIn()" class="w-full bg-black text-white py-3 rounded-lg text-sm font-bold hover:bg-gray-800">Create Account</button>
-            </div>
-            <div id="view-user" class="hidden flex items-center gap-4 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
-                <div class="h-10 w-10 bg-orange-200 rounded-full flex items-center justify-center font-serif text-orange-900" id="user-avatar">?</div>
-                <div>
-                    <p class="font-bold text-sm" id="user-name">Guest</p>
-                    <p class="text-xs text-orange-800/60">Member</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex px-8 mt-8 border-b border-gray-100 gap-6">
-            <button onclick="switchTab('reflections')" id="tab-reflections" class="tab-btn active pb-3 text-sm font-medium transition">Reflections</button>
-            <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn pb-3 text-sm font-medium transition">Settings</button>
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-8 bg-gray-50/30">
-            <div id="content-reflections">
-                <div id="archive-list" class="space-y-3"></div>
-            </div>
-            <div id="content-settings" class="hidden space-y-6">
-                <button onclick="signOut()" class="text-red-500 text-sm font-medium hover:underline">Sign Out</button>
-            </div>
-        </div>
-    </aside>
-
-    <main class="max-w-screen-sm mx-auto px-6 pb-40 pt-20">
-
-        <header class="min-h-[90vh] flex flex-col justify-center items-center text-center">
-            <span class="text-[10px] uppercase tracking-[0.2em] text-orange-800 font-bold mb-4">February 7, 2026</span>
-            <h1 class="text-6xl sm:text-8xl mb-2 serif">Kintsugi</h1>
-            <p class="text-lg text-gray-400 font-light mb-6">(Noun) Golden Joinery</p>
-            <p class="serif italic text-2xl text-gray-600 max-w-md leading-relaxed">
-                The Japanese art of repairing broken pottery by mending the areas of breakage with gold.
+      <!-- HISTORY -->
+      <div class="section">
+        <div class="label">History</div>
+        <div class="card">
+          <details>
+            <summary>The Shogun who chose stillness</summary>
+            <p>
+              In feudal Japan, a shogun delayed a decisive battle for days,
+              choosing contemplation over reaction. His generals panicked.
+              His enemies advanced. Yet in waiting, he learned their weakness
+              and won without bloodshed.
             </p>
-            <div onclick="document.getElementById('content-start').scrollIntoView({behavior: 'smooth'})" class="mt-20 animate-bounce text-gray-300 cursor-pointer hover:text-black transition p-4">
-                ↓
-            </div>
-        </header>
-
-        <div id="content-start"></div> 
-        <section class="py-24 border-t border-gray-100 reveal-on-scroll">
-            <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-4">The History</span>
-            <h2 class="text-3xl serif mb-6">The Shogun's Bowl</h2>
-            <div class="text-xl text-gray-600 leading-relaxed font-light">
-                <p class="mb-6">
-                    In the late 15th century, Shogun Ashikaga Yoshimitsu sent a damaged tea bowl back to China for repairs. It returned held together with ugly metal staples. 
-                </p>
-                <p>
-                    Disappointed, he asked his craftsmen to find a better way. They decided to <span class="text-black font-normal">illuminate the damage</span> with gold lacquer. The break became the most valuable part of the object.
-                </p>
-            </div>
-        </section>
-
-        <section class="py-24 border-t border-gray-100 bg-white -mx-6 px-6 reveal-on-scroll">
-            <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-10 text-center">The Perspective</span>
-            <blockquote class="text-4xl serif italic text-center leading-tight text-gray-800">
-                "The world breaks everyone and afterward many are strong at the broken places."
-            </blockquote>
-            <p class="text-center mt-8 text-xs font-bold uppercase tracking-widest text-gray-400">— Ernest Hemingway</p>
-        </section>
-
-        <section class="py-20 my-10 bg-gray-100 rounded-3xl text-center reveal-on-scroll">
-            <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold block mb-6">Grounding</span>
-            <p class="serif text-2xl text-gray-500 italic">Close your eyes.</p>
-            <div class="w-px h-12 bg-gray-300 mx-auto my-6"></div>
-            <p class="text-sm text-gray-500">Take a breath for every scar you carry.</p>
-        </section>
-
-        <section class="py-10 reveal-on-scroll" id="journal-section">
-            <div class="bg-white p-8 sm:p-12 rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100">
-                <span class="text-[10px] uppercase tracking-widest text-orange-800 font-bold block text-center mb-6">The Ritual</span>
-                
-                <h3 class="text-3xl sm:text-4xl serif text-center mb-10">
-                    What is a "crack" in your life right now that you could treat with gold?
-                </h3>
-                
-                <textarea id="journalEntry" class="w-full h-80 p-6 bg-[url('https://www.transparenttextures.com/patterns/lined-paper.png')] bg-white border border-gray-200 rounded-lg text-lg leading-loose serif focus:outline-none focus:border-orange-300 transition resize-none" placeholder="Start writing here..."></textarea>
-
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4">
-                    <button onclick="exportPDF()" class="text-gray-400 hover:text-black text-xs uppercase font-bold tracking-widest transition">
-                        Download PDF
-                    </button>
-                    <button onclick="saveEntry()" class="bg-black text-white px-12 py-4 rounded-full text-sm font-bold tracking-wide hover:scale-105 active:scale-95 transition shadow-lg">
-                        Save Entry
-                    </button>
-                </div>
-                <p id="save-feedback" class="text-center text-xs text-green-600 mt-4 h-4 opacity-0 transition">Saved to Reflections</p>
-            </div>
-        </section>
-
-    </main>
-
-    <footer class="text-center py-10 text-gray-300 text-xs uppercase tracking-widest">
-        Morare © 2026
-    </footer>
-
-    <div id="pdf-template" style="display:none">
-        <div style="padding: 60px; font-family: 'Times New Roman', serif;">
-            <h1 style="font-size: 40px; margin:0; text-align: center;">Kintsugi</h1>
-            <p style="text-align: center; color: #666; margin-bottom: 40px;">February 7, 2026</p>
-            <hr>
-            <p style="font-weight:bold; margin-top: 30px;">Prompt: What is a crack you are filling with gold?</p>
-            <div id="pdf-body" style="font-size: 14px; line-height: 1.8; margin-top: 20px;"></div>
+          </details>
         </div>
+      </div>
+
+      <!-- QUOTE -->
+      <div class="section">
+        <div class="label">Quote</div>
+        <div class="card quote">
+          “Never confuse motion with action.”<br/>
+          — Ernest Hemingway
+        </div>
+      </div>
+
+      <!-- METAPHOR -->
+      <div class="section">
+        <div class="label">Metaphor</div>
+        <div class="card">
+          Gold in the cracks.<br/><br/>
+          Not despite the fractures — because of them.
+        </div>
+      </div>
+
+      <!-- GROUNDING -->
+      <div class="section">
+        <div class="label">Pause</div>
+        <div class="pause">
+          Before you write, stop.  
+          Feel your body.  
+          Let the noise settle.
+        </div>
+      </div>
+
+      <!-- QUESTION + JOURNAL -->
+      <div class="section">
+        <div class="label">Question of the Day</div>
+        <div class="card">
+          <p>
+            Where in your life are you being asked to pause —
+            even though everything urges you to rush?
+          </p>
+
+          <textarea id="journal"></textarea>
+          <button class="save-btn" onclick="saveEntry()">Save Entry</button>
+        </div>
+      </div>
+
     </div>
+  </main>
+</div>
 
-    <script>
-        // --- 1. Animation Logic (Now simpler) ---
-        // We set opacity to 1 immediately if JS fails, but use observer for effect if JS runs
-        document.addEventListener('DOMContentLoaded', () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if(entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        entry.target.style.opacity = 1; // Force visible
-                    }
-                });
-            }, { threshold: 0.1 });
-            
-            document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
-        });
+<script>
+const journal = document.getElementById("journal");
+const reflectionsList = document.getElementById("reflections-list");
 
-        // --- 2. Menu Logic ---
-        function toggleMenu() {
-            const menu = document.getElementById('side-menu');
-            const overlay = document.getElementById('overlay');
-            
-            if (menu.classList.contains('open')) {
-                menu.classList.remove('open');
-                overlay.classList.add('hidden');
-            } else {
-                menu.classList.add('open');
-                overlay.classList.remove('hidden');
-            }
-        }
+// Load saved text
+journal.value = localStorage.getItem("morare_today") || "";
 
-        // --- 3. Tabs ---
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            document.getElementById('content-reflections').classList.add('hidden');
-            document.getElementById('content-settings').classList.add('hidden');
-            document.getElementById(`content-${tabName}`).classList.remove('hidden');
-        }
+// Save entry
+function saveEntry() {
+  const text = journal.value.trim();
+  if (!text) return alert("Write something first.");
 
-        // --- 4. Auth & Saving ---
-        const KEY_USER = 'morare_user';
-        const KEY_ENTRY = 'morare_entry_2026-02-07';
+  const entry = {
+    date: new Date().toDateString(),
+    text
+  };
 
-        function signIn() {
-            const name = document.getElementById('input-name').value;
-            if(!name) return;
-            localStorage.setItem(KEY_USER, JSON.stringify({ name }));
-            checkAuth();
-        }
+  let entries = JSON.parse(localStorage.getItem("morare_entries")) || [];
+  entries.unshift(entry);
+  localStorage.setItem("morare_entries", JSON.stringify(entries));
+  localStorage.setItem("morare_today", text);
 
-        function signOut() {
-            if(confirm("Sign out?")) {
-                localStorage.removeItem(KEY_USER);
-                location.reload();
-            }
-        }
+  renderReflections();
+}
 
-        function checkAuth() {
-            const user = JSON.parse(localStorage.getItem(KEY_USER));
-            if(user) {
-                document.getElementById('view-guest').classList.add('hidden');
-                document.getElementById('view-user').classList.remove('hidden');
-                document.getElementById('view-user').classList.add('flex'); // Ensure flex display
-                document.getElementById('user-name').innerText = user.name;
-                document.getElementById('user-avatar').innerText = user.name[0].toUpperCase();
-            } else {
-                document.getElementById('view-guest').classList.remove('hidden');
-                document.getElementById('view-user').classList.add('hidden');
-                document.getElementById('view-user').classList.remove('flex');
-            }
-        }
+// Render reflections in side menu
+function renderReflections() {
+  reflectionsList.innerHTML = "";
+  const entries = JSON.parse(localStorage.getItem("morare_entries")) || [];
 
-        function saveEntry() {
-            const text = document.getElementById('journalEntry').value;
-            if(!text) return;
-            localStorage.setItem(KEY_ENTRY, text);
-            document.getElementById('save-feedback').style.opacity = 1;
-            loadReflections();
-        }
+  entries.forEach(e => {
+    const div = document.createElement("div");
+    div.className = "reflection-card";
+    div.textContent = e.date;
+    div.onclick = () => alert(e.text);
+    reflectionsList.appendChild(div);
+  });
+}
 
-        function loadReflections() {
-            const list = document.getElementById('archive-list');
-            list.innerHTML = '';
-            const text = localStorage.getItem(KEY_ENTRY);
-            
-            if(text) {
-                const item = document.createElement('div');
-                item.className = 'p-4 bg-white border border-gray-100 rounded-lg shadow-sm cursor-pointer hover:bg-gray-50';
-                item.onclick = () => { toggleMenu(); document.getElementById('journal-section').scrollIntoView(); };
-                item.innerHTML = `
-                    <div class="text-[10px] font-bold text-orange-800 uppercase mb-1">Feb 7 • Kintsugi</div>
-                    <div class="text-xs text-gray-500 truncate font-serif">${text}</div>
-                `;
-                list.appendChild(item);
-            } else {
-                list.innerHTML = '<p class="text-xs text-gray-400 italic text-center">No entries yet.</p>';
-            }
-        }
+renderReflections();
 
-        function exportPDF() {
-            const text = document.getElementById('journalEntry').value;
-            if(!text) return alert("Write something first.");
-            document.getElementById('pdf-body').innerText = text;
-            const el = document.getElementById('pdf-template');
-            el.style.display = 'block';
-            html2pdf().from(el).save('Morare_Reflection.pdf').then(() => el.style.display='none');
-        }
+// Sign out (clear local data)
+function signOut() {
+  localStorage.clear();
+  location.reload();
+}
+</script>
 
-        window.onload = () => {
-            checkAuth();
-            if(localStorage.getItem(KEY_ENTRY)) {
-                document.getElementById('journalEntry').value = localStorage.getItem(KEY_ENTRY);
-            }
-            loadReflections();
-        };
-    </script>
 </body>
 </html>
