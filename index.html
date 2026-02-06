@@ -3,190 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Morare — Space for Soul</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Morare — Daily Ritual</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <style>
-        body { background-color: #fcfaf8; color: #2d2d2d; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        /* Base Design System */
+        :root {
+            --paper: #fcfaf8;
+            --ink: #2d2d2d;
+            --gold: #c5a059;
+            --faint: rgba(0,0,0,0.05);
+        }
+        body { background-color: var(--paper); color: var(--ink); font-family: 'Inter', sans-serif; }
         .serif { font-family: 'Cormorant Garamond', serif; }
         
-        /* Fixed Navigation Fix */
-        nav {
-            background: rgba(252, 250, 248, 0.9);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-        }
-
-        /* Side Menu Logic */
-        #side-menu { 
-            transform: translateX(100%); 
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: -10px 0 30px rgba(0,0,0,0.05);
-        }
-        #side-menu.open { transform: translateX(0); }
-        .overlay { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.2); 
-            backdrop-filter: blur(4px); 
-            z-index: 40; 
-        }
-        .overlay.active { display: block; }
-
-        /* Animation */
-        .fade-in { opacity: 0; transform: translateY(20px); transition: all 1s ease-out; }
+        /* Smooth Scroll & Animations */
+        html { scroll-behavior: smooth; }
+        .fade-in { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
         .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* UI Elements */
+        .glass-panel {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            border-left: 1px solid rgba(0,0,0,0.05);
+        }
+        .section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: #999;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        /* Side Menu Transition */
+        #side-menu { transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        #side-menu.open { transform: translateX(0); }
+        
+        /* Tabs styling */
+        .tab-btn.active { color: black; border-bottom: 2px solid black; }
+        .tab-btn { color: #999; border-bottom: 2px solid transparent; }
     </style>
 </head>
 <body>
 
-    <nav class="fixed top-0 left-0 w-full z-50">
+    <nav class="fixed top-0 left-0 w-full z-40 bg-[rgba(252,250,248,0.9)] backdrop-blur-md border-b border-[rgba(0,0,0,0.03)]">
         <div class="max-w-screen-md mx-auto flex justify-between items-center px-6 py-4">
-            <div class="text-2xl serif font-semibold italic tracking-tighter">Morare</div>
-            <button onclick="toggleMenu()" class="flex items-center gap-2 group p-2 rounded-lg hover:bg-orange-50 transition">
-                <span class="text-xs uppercase tracking-widest font-bold text-gray-500 group-hover:text-black">Menu</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            <div class="text-2xl serif font-semibold italic tracking-tight">Morare</div>
+            
+            <button onclick="toggleMenu()" class="group flex items-center gap-3 px-4 py-2 hover:bg-black hover:text-white rounded-full transition-all">
+                <span class="text-[10px] font-bold uppercase tracking-widest hidden sm:block">Menu</span>
+                <div class="space-y-1">
+                    <span class="block w-5 h-px bg-current"></span>
+                    <span class="block w-5 h-px bg-current"></span>
+                </div>
             </button>
         </div>
     </nav>
 
-    <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
-    <div id="side-menu" class="fixed top-0 right-0 h-full w-80 bg-white z-50 p-8 overflow-y-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h2 class="serif text-3xl">Journal</h2>
-            <button onclick="toggleMenu()" class="text-3xl text-gray-300 hover:text-black">&times;</button>
+    <div id="overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 hidden opacity-0 transition-opacity duration-300"></div>
+    
+    <aside id="side-menu" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white z-50 shadow-2xl flex flex-col">
+        <div class="p-8 pb-0 flex justify-between items-center">
+            <h2 class="serif text-3xl italic">Dashboard</h2>
+            <button onclick="toggleMenu()" class="p-2 hover:rotate-90 transition duration-300">✕</button>
         </div>
 
-        <div id="account-area">
-            <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Account</h3>
-            <div id="logged-out-view">
-                <input type="text" id="username" placeholder="Name" class="w-full mb-3 p-3 bg-gray-50 rounded-lg text-sm outline-none focus:ring-1 focus:ring-orange-200">
-                <button onclick="createAccount()" class="w-full bg-black text-white py-3 rounded-lg text-sm font-semibold hover:bg-gray-800 transition">Create Profile</button>
+        <div id="auth-section" class="px-8 mt-6">
+            <div id="view-guest" class="bg-gray-50 p-6 rounded-xl">
+                <p class="text-sm text-gray-500 mb-4">Sync your journey.</p>
+                <input type="text" id="input-name" placeholder="Your Name" class="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm mb-3 outline-none focus:border-black">
+                <button onclick="signIn()" class="w-full bg-black text-white py-3 rounded-lg text-sm font-bold">Create Account</button>
             </div>
-            <div id="logged-in-view" class="hidden">
-                <div class="flex items-center gap-4 p-4 bg-orange-50 rounded-2xl">
-                    <div class="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center serif text-lg" id="user-initial">M</div>
-                    <p class="font-semibold text-sm" id="display-name">User</p>
+            
+            <div id="view-user" class="hidden flex items-center gap-4 bg-orange-50/50 p-4 rounded-xl border border-orange-100">
+                <div class="h-10 w-10 bg-orange-200 rounded-full flex items-center justify-center font-serif text-orange-900" id="user-avatar">?</div>
+                <div>
+                    <p class="font-bold text-sm" id="user-name">Guest</p>
+                    <p class="text-xs text-orange-800/60">Free Tier Member</p>
                 </div>
             </div>
         </div>
 
-        <hr class="my-10 border-gray-100">
-
-        <h3 class="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Past Reflections</h3>
-        <div id="archive-list" class="space-y-3">
-            <p class="text-xs text-gray-400 italic">Your saved entries will appear here.</p>
+        <div class="flex px-8 mt-8 border-b border-gray-100 gap-6">
+            <button onclick="switchTab('reflections')" id="tab-reflections" class="tab-btn active pb-3 text-sm font-medium transition">Reflections</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="tab-btn pb-3 text-sm font-medium transition">Settings</button>
         </div>
-    </div>
 
-    <main class="max-w-screen-sm mx-auto px-6">
-        
-        <header class="h-screen flex flex-col justify-center items-center text-center">
-            <span class="uppercase tracking-[0.3em] text-[10px] mb-6 text-gray-400 font-bold">February 7, 2026</span>
-            <h1 class="text-7xl sm:text-8xl mb-4 serif leading-none">Kintsugi</h1>
-            <p class="serif italic text-2xl text-gray-400">The beauty of the break.</p>
-            <div class="mt-32 text-gray-200 animate-bounce">
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+        <div class="flex-1 overflow-y-auto p-8 bg-gray-50/30">
+            
+            <div id="content-reflections">
+                <div id="archive-list" class="space-y-3">
+                    <p class="text-xs text-gray-400 italic text-center mt-10">No entries found yet.</p>
+                </div>
             </div>
+
+            <div id="content-settings" class="hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Dark Mode</span>
+                    <button class="w-10 h-5 bg-gray-200 rounded-full relative"><span class="absolute left-1 top-1 w-3 h-3 bg-white rounded-full"></span></button>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-600">Daily Reminder</span>
+                    <span class="text-xs text-gray-400">7:00 AM</span>
+                </div>
+                <hr class="border-gray-200">
+                <button onclick="signOut()" class="text-red-500 text-sm font-medium hover:underline">Sign Out</button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="max-w-screen-sm mx-auto px-6 pb-40">
+
+        <header class="h-[90vh] flex flex-col justify-center items-center text-center fade-in">
+            <span class="section-label text-orange-800">February 7, 2026</span>
+            <h1 class="text-6xl sm:text-8xl mb-2 serif">Kintsugi</h1>
+            <p class="text-lg text-gray-400 font-light mb-8">(Noun) Golden Joinery</p>
+            <p class="serif italic text-2xl text-gray-600 max-w-md leading-relaxed">
+                The Japanese art of repairing broken pottery by mending the areas of breakage with lacquer dusted or mixed with powdered gold.
+            </p>
+            <div class="mt-20 animate-bounce text-gray-300">↓</div>
         </header>
 
-        <section class="min-h-[60vh] py-32 fade-in">
-            <span class="text-[10px] uppercase tracking-[0.2em] text-orange-800 font-black">History</span>
-            <h2 class="text-4xl serif mt-6 mb-8">15th Century Japan</h2>
+        <section class="py-24 border-t border-gray-100 fade-in">
+            <span class="section-label">The History</span>
+            <h2 class="text-3xl serif mb-6">The Shogun's Bowl</h2>
+            <div class="prose prose-lg text-gray-600 leading-8 font-light">
+                <p>
+                    In the late 15th century, the Japanese Shogun Ashikaga Yoshimitsu sent a damaged Chinese tea bowl back to China for repairs. It returned held together with ugly metal staples. 
+                </p>
+                <p class="mt-4">
+                    Disappointed, he asked his own craftsmen to find a more aesthetic method of repair. They decided that instead of hiding the damage, they would illuminate it. This birthed a philosophy: the break is not the end of the object’s life, but a moment in its history that makes it more beautiful.
+                </p>
+            </div>
+        </section>
+
+        <section class="py-24 border-t border-gray-100 fade-in bg-white -mx-6 px-6">
+            <span class="section-label text-center">The Perspective</span>
+            <blockquote class="text-4xl sm:text-5xl serif italic text-center mt-10 leading-tight text-gray-800">
+                "The world breaks everyone and afterward many are strong at the broken places."
+            </blockquote>
+            <p class="text-center mt-8 text-sm font-bold uppercase tracking-widest text-gray-400">— Ernest Hemingway</p>
+        </section>
+
+        <section class="py-24 fade-in">
+            <span class="section-label">The Metaphor</span>
+            <h2 class="text-3xl serif mb-6">Gold in the Cracks</h2>
             <p class="text-xl leading-relaxed text-gray-600 font-light">
-                When a Shogun's favorite tea bowl broke, craftsmen filled the cracks with <span class="italic text-orange-900 font-medium">lacquer mixed with powdered gold</span>. They chose to highlight the damage, rather than hide it.
+                We spend so much of our lives trying to present a seamless front. We hide our grief, our failures, and our rejections. But <span class="serif italic text-black">Morare</span> asks: what if you highlighted them? What if the "ruined" part of your year was actually the entry point for the gold?
             </p>
         </section>
 
-        <section class="min-h-screen py-32 fade-in">
-            <div class="p-10 bg-white rounded-[2.5rem] shadow-sm border border-gray-100">
-                <h3 class="text-3xl serif mb-10 text-center leading-tight">What is a "crack" in your life that you are learning to fill with gold?</h3>
+        <section class="py-20 my-10 bg-gray-100 rounded-3xl text-center fade-in">
+            <span class="section-label mb-6">Grounding</span>
+            <p class="serif text-2xl text-gray-500 italic">Take one deep breath.</p>
+            <div class="w-1 h-16 bg-gray-300 mx-auto my-6"></div>
+            <p class="text-sm text-gray-500">Release the tension in your jaw.</p>
+        </section>
+
+        <section class="py-10 fade-in" id="journal-section">
+            <div class="bg-white p-8 sm:p-12 rounded-[2rem] shadow-xl shadow-gray-100 border border-gray-100">
+                <span class="section-label text-center text-orange-800">The Ritual</span>
                 
-                <textarea id="journalEntry" class="w-full h-80 p-0 bg-transparent outline-none resize-none text-xl leading-relaxed serif border-none focus:ring-0" placeholder="Type your reflection..."></textarea>
+                <h3 class="text-3xl sm:text-4xl serif text-center mb-10 mt-4">
+                    What is a "crack" in your life right now that you could treat with gold?
+                </h3>
                 
-                <div class="flex justify-between items-center mt-12 pt-8 border-t border-gray-50">
-                    <span id="saveStatus" class="text-[10px] uppercase tracking-widest text-gray-300 font-bold">Drafting...</span>
-                    <div class="flex gap-4">
-                        <button onclick="exportPDF()" class="text-gray-400 hover:text-black transition text-sm font-medium">Export PDF</button>
-                        <button onclick="saveEntry()" class="bg-black text-white px-8 py-3 rounded-full hover:scale-105 transition-all text-sm font-bold tracking-wide">Save</button>
-                    </div>
+                <div class="relative group">
+                    <textarea id="journalEntry" class="w-full h-80 p-6 bg-[url('https://www.transparenttextures.com/patterns/lined-paper.png')] bg-white border border-gray-200 rounded-lg text-lg leading-loose serif focus:outline-none focus:border-orange-300 transition resize-none" placeholder="Start writing here..."></textarea>
+                    <div class="absolute bottom-4 right-4 text-xs text-gray-300 pointer-events-none">Auto-saving...</div>
                 </div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4">
+                    <button onclick="exportPDF()" class="text-gray-400 hover:text-black text-xs uppercase font-bold tracking-widest transition">
+                        ↓ Download PDF
+                    </button>
+                    <button onclick="saveEntry()" class="bg-black text-white px-12 py-4 rounded-full text-sm font-bold tracking-wide hover:scale-105 active:scale-95 transition shadow-lg">
+                        Save Entry
+                    </button>
+                </div>
+                <p id="save-feedback" class="text-center text-xs text-green-600 mt-4 h-4 opacity-0 transition">Saved to Reflections</p>
             </div>
-        </main>
+        </section>
+
     </main>
 
+    <footer class="text-center py-10 text-gray-300 text-xs uppercase tracking-widest">
+        Morare © 2026
+    </footer>
+
+    <div id="pdf-template" style="display:none">
+        <div style="padding: 60px; font-family: 'Times New Roman', serif;">
+            <div style="text-align:center; border-bottom: 1px solid #ddd; padding-bottom: 20px; margin-bottom: 40px;">
+                <h1 style="font-size: 40px; margin:0;">Kintsugi</h1>
+                <p style="color:#666; font-style:italic;">February 7, 2026</p>
+            </div>
+            <p style="font-weight:bold; margin-bottom: 20px;">Prompt: Where is the gold in your cracks?</p>
+            <div id="pdf-body" style="font-size: 14px; line-height: 2;"></div>
+        </div>
+    </div>
+
     <script>
-        // Toggle Menu
+        // --- 1. UI & Animations ---
         function toggleMenu() {
-            document.getElementById('side-menu').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('active');
+            const menu = document.getElementById('side-menu');
+            const overlay = document.getElementById('overlay');
+            const isOpen = menu.classList.contains('open');
+            
+            if (isOpen) {
+                menu.classList.remove('open');
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            } else {
+                overlay.classList.remove('hidden');
+                // tiny delay to allow display:block to apply before opacity transition
+                setTimeout(() => overlay.classList.add('active'), 10); 
+                menu.classList.add('open');
+            }
         }
 
-        // Account
-        function createAccount() {
-            const name = document.getElementById('username').value;
-            if(!name) return;
-            const user = { name };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // --- 2. Tab Switching logic ---
+        function switchTab(tabName) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Update Content
+            document.getElementById('content-reflections').classList.add('hidden');
+            document.getElementById('content-settings').classList.add('hidden');
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+        }
+
+        // --- 3. Auth Logic (Local Storage Simulation) ---
+        function signIn() {
+            const name = document.getElementById('input-name').value;
+            if(!name) return alert("Please enter a name.");
+            
+            const user = { name: name, joined: new Date().toLocaleDateString() };
             localStorage.setItem('morare_user', JSON.stringify(user));
-            location.reload(); 
+            checkAuth();
         }
 
-        // Save & Archive
+        function signOut() {
+            if(confirm("Are you sure? This will remove your profile name from this device.")) {
+                localStorage.removeItem('morare_user');
+                location.reload();
+            }
+        }
+
+        function checkAuth() {
+            const user = JSON.parse(localStorage.getItem('morare_user'));
+            if(user) {
+                document.getElementById('view-guest').classList.add('hidden');
+                document.getElementById('view-user').classList.remove('hidden');
+                document.getElementById('view-user').classList.add('flex');
+                document.getElementById('user-name').innerText = user.name;
+                document.getElementById('user-avatar').innerText = user.name.charAt(0).toUpperCase();
+            } else {
+                document.getElementById('view-guest').classList.remove('hidden');
+                document.getElementById('view-user').classList.add('hidden');
+                document.getElementById('view-user').classList.remove('flex');
+            }
+        }
+
+        // --- 4. Journaling & Archive Logic ---
+        const ENTRY_KEY = 'morare_entry_2026-02-07';
+
         function saveEntry() {
             const text = document.getElementById('journalEntry').value;
             if(!text) return;
-            localStorage.setItem('morare_entry_2026-02-07', text);
-            document.getElementById('saveStatus').innerText = "Saved to Archive";
-            setTimeout(() => { document.getElementById('saveStatus').innerText = "Drafting..."; }, 3000);
-            renderArchive();
+
+            // Save to local storage
+            localStorage.setItem(ENTRY_KEY, text);
+            
+            // Visual Feedback
+            const feedback = document.getElementById('save-feedback');
+            feedback.style.opacity = '1';
+            setTimeout(() => feedback.style.opacity = '0', 3000);
+
+            // Update Archive List immediately
+            loadReflections();
         }
 
-        function renderArchive() {
+        function loadReflections() {
             const list = document.getElementById('archive-list');
-            const savedText = localStorage.getItem('morare_entry_2026-02-07');
-            if(savedText) {
-                list.innerHTML = `
-                    <div class="p-4 bg-orange-50 rounded-xl">
-                        <p class="text-[10px] font-bold text-orange-800 uppercase mb-1">Feb 7, 2026</p>
-                        <p class="text-sm text-gray-600 truncate">${savedText}</p>
+            list.innerHTML = ''; // Clear current list
+            
+            // Look for our specific entry (In a real app, we'd loop through all keys)
+            const todayEntry = localStorage.getItem(ENTRY_KEY);
+            
+            if(todayEntry) {
+                const item = document.createElement('div');
+                item.className = 'p-4 bg-white rounded-lg border border-gray-100 cursor-pointer hover:shadow-md transition';
+                item.onclick = () => {
+                    toggleMenu();
+                    document.getElementById('journal-section').scrollIntoView();
+                };
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-[10px] uppercase font-bold text-orange-800">Feb 7</span>
+                        <span class="text-[10px] text-gray-400">Kintsugi</span>
                     </div>
+                    <p class="text-xs text-gray-600 truncate font-serif italic">${todayEntry}</p>
                 `;
+                list.appendChild(item);
+            } else {
+                 list.innerHTML = '<p class="text-xs text-gray-400 italic text-center mt-10">Your journal is empty.</p>';
             }
         }
 
-        // PDF
+        // --- 5. PDF Export ---
         function exportPDF() {
             const text = document.getElementById('journalEntry').value;
-            if(!text) return alert("Please write a reflection first.");
-            const element = document.createElement('div');
-            element.innerHTML = `<div style="padding:50px; font-family:serif;"><h1>Kintsugi</h1><p>${text}</p></div>`;
-            html2pdf().from(element).save('Morare-Reflection.pdf');
+            if(!text) return alert("Please write something first.");
+            
+            document.getElementById('pdf-body').innerText = text;
+            const element = document.getElementById('pdf-template');
+            element.style.display = 'block';
+            
+            const opt = {
+                margin: 1,
+                filename: 'Morare_Kintsugi.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.style.display = 'none';
+            });
         }
 
-        // Init
+        // --- Initialization ---
         window.onload = () => {
-            const user = JSON.parse(localStorage.getItem('morare_user'));
-            if(user) {
-                document.getElementById('logged-out-view').classList.add('hidden');
-                document.getElementById('logged-in-view').classList.remove('hidden');
-                document.getElementById('display-name').innerText = user.name;
-                document.getElementById('user-initial').innerText = user.name[0];
-            }
-
-            const savedText = localStorage.getItem('morare_entry_2026-02-07');
-            if (savedText) {
+            checkAuth();
+            
+            // Load saved text if exists
+            const savedText = localStorage.getItem(ENTRY_KEY);
+            if(savedText) {
                 document.getElementById('journalEntry').value = savedText;
-                renderArchive();
             }
-
-            // Scroll animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+            
+            loadReflections();
         };
     </script>
 </body>
