@@ -17,113 +17,105 @@ def init_db():
 conn = init_db()
 
 # --- SECURITY ---
-def make_hashes(password): return hashlib.sha256(str.encode(password)).hexdigest()
-def check_hashes(password, hashed_text): return make_hashes(password) == hashed_text
+def make_hashes(password): 
+    return hashlib.sha256(str.encode(password)).hexdigest()
+
+def check_hashes(password, hashed_text): 
+    return make_hashes(password) == hashed_text
 
 # --- UI CONFIG ---
-st.set_page_config(page_title="Morare | Your Private Vault", page_icon="📜", layout="centered")
+st.set_page_config(page_title="Morare", page_icon="📜", layout="centered")
 
 # --- IMMERSIVE JOURNAL CSS ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap');
 
-    /* The "Old World" Aesthetic */
-    .stApp {
-        background: radial-gradient(circle, #fdfcf0 0%, #f2efe2 100%);
-    }
+    .stApp { background: #f2efe2; }
 
-    /* Journal Book UI */
+    /* The Journal Page Look */
     .journal-page {
         background: #fffdfa;
-        padding: 50px;
-        border-radius: 5px;
-        box-shadow: 
-            5px 5px 20px rgba(0,0,0,0.05),
-            inset 0 0 100px rgba(220,210,190,0.2);
+        padding: 40px;
+        border-radius: 2px;
+        box-shadow: 10px 10px 30px rgba(0,0,0,0.05);
         border: 1px solid #dcd1be;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         position: relative;
     }
-
-    /* The Spine Shadow */
-    .journal-page::before {
-        content: '';
+    
+    /* Binding shadow */
+    .journal-page::after {
+        content: "";
         position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 30px;
-        background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
+        top: 0; left: 0; bottom: 0;
+        width: 15px;
+        background: linear-gradient(to right, rgba(0,0,0,0.08), transparent);
     }
 
-    h1, h2, .brand {
-        font-family: 'Playfair Display', serif;
-        color: #2c2c2c;
-    }
+    h1, h2, h3 { font-family: 'Playfair Display', serif !important; color: #2c2c2c; }
+    p, span { font-family: 'Lora', serif; }
 
-    .mantra-text {
+    .mantra-display {
+        text-align: center;
         font-family: 'Playfair Display', serif;
         font-style: italic;
-        font-size: 2.2rem;
-        text-align: center;
+        font-size: 2.8rem;
         color: #5d5d5d;
-        margin: 20px 0;
+        margin-bottom: 30px;
     }
 
-    /* Paper Lines */
-    div[data-baseweb="textarea"] {
-        background-color: transparent !important;
-        border: none !important;
-    }
+    /* Styling the Lined Paper Input */
     textarea {
         background: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px) !important;
         line-height: 32px !important;
         font-family: 'Lora', serif !important;
-        font-size: 1.1rem !important;
+        font-size: 1.15rem !important;
         color: #3b3b3b !important;
-        padding-left: 10px !important;
+        border: none !important;
     }
 
-    /* Buttons Styling */
-    .stButton>button {
-        background-color: #4a4a4a;
-        color: white;
-        border-radius: 0px;
-        font-family: 'Inter', sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        border: none;
-        padding: 10px 25px;
-        transition: 0.3s;
-    }
-    .stButton>button:hover {
-        background-color: #9A8C98;
-        color: white;
+    /* Center the login box */
+    .login-container {
+        max-width: 400px;
+        margin: auto;
+        padding: 30px;
+        background: white;
+        border-radius: 8px;
     }
 
-    /* Archive Grid */
-    .archive-card {
-        background: #eeebe3;
-        padding: 15px;
-        border: 1px solid #d1cdbf;
-        cursor: pointer;
-        transition: 0.2s;
-        font-family: 'Lora', serif;
-    }
-    .archive-card:hover { background: #e5e2d6; }
+    /* Hide UI clutter */
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
     </style>
 """, unsafe_allow_html=True)
 
-# --- AUTHENTICATION LOGIC ---
-if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
+# --- CONTENT LOADER (Integrated for speed) ---
+def get_daily_content():
+    # Fallback content if content.js isn't found
+    today_key = datetime.date.today().strftime("%Y-%m-%d")
+    return {
+        "word": "Clarity",
+        "question": "What is one thing you are doing today purely because you want to?",
+        "history": "Ernest Shackleton’s Endurance: After their ship was crushed by ice, he led his crew to safety over 800 miles of ocean.",
+        "quote": "The best way out is always through. — Robert Frost"
+    }
 
-def auth_screen():
+# --- AUTHENTICATION SCREENS ---
+if 'logged_in' not in st.session_state:
+    st.session_state['logged_in'] = False
+
+def auth_flow():
     st.markdown("<h1 style='text-align:center;'>Morare</h1>", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["Sign In", "Open New Vault"])
+    st.markdown("<p style='text-align:center;'>Your Private Sanctuary</p>", unsafe_allow_html=True)
+    
+    tab1, tab2 = st.tabs(["Sign In", "Create Vault"])
     
     with tab1:
-        user = st.text_input("Username", key="login_user")
-        pw = st.text_input("Password", type="password", key="login_pw")
-        if st.button("Enter Vault"):
+        user = st.text_input("Username", key="l_user")
+        pw = st.text_input("Password", type="password", key="l_pw")
+        if st.button("Open Vault"):
             c = conn.cursor()
             c.execute('SELECT password FROM users WHERE username =?', (user,))
             data = c.fetchone()
@@ -135,90 +127,80 @@ def auth_screen():
                 st.error("The key does not fit this lock.")
 
     with tab2:
-        new_user = st.text_input("Choose Username")
-        new_pw = st.text_input("Choose Password", type="password")
-        if st.button("Create Vault"):
-            try:
-                c = conn.cursor()
-                c.execute('INSERT INTO users(username,password) VALUES (?,?)', (new_user, make_hashes(new_pw)))
-                conn.commit()
-                st.success("Vault Created. You may now sign in.")
-            except:
-                st.error("This username is already claimed.")
+        new_user = st.text_input("New Username", key="r_user")
+        new_pw = st.text_input("New Password", type="password", key="r_pw")
+        if st.button("Forge Key"):
+            if new_user and new_pw:
+                try:
+                    c = conn.cursor()
+                    c.execute('INSERT INTO users(username,password) VALUES (?,?)', (new_user, make_hashes(new_pw)))
+                    conn.commit()
+                    st.success("Vault Created. You may now sign in.")
+                except:
+                    st.error("This username is already claimed.")
+            else:
+                st.warning("Please provide a name and a key.")
 
-# --- MAIN APP INTERFACE ---
+# --- MAIN APP ---
 def main_app():
-    # Sidebar Navigation
+    user = st.session_state['username']
+    
     with st.sidebar:
-        st.markdown(f"### Welcome, {st.session_state['username']}")
-        page = st.radio("Navigate", ["Today's Reflection", "The Grand Library", "Account Settings"])
-        if st.button("Close Vault"):
-            st.session_state['logged_in'] = False
-            st.rerun()
+        st.markdown(f"### 🖋️ {user}")
+        choice = st.radio("Navigation", ["Today's Ink", "The Archive", "Logout"])
+        
+    if choice == "Logout":
+        st.session_state['logged_in'] = False
+        st.rerun()
 
-    # --- PAGE: TODAY'S REFLECTION ---
-    if page == "Today's Reflection":
-        # Load your content logic here (Simplified for the example)
-        today = datetime.date.today().strftime("%Y-%m-%d")
-        
-        st.markdown(f"<div class='date-label' style='text-align:center;'>{datetime.date.today().strftime('%B %d, %Y')}</div>", unsafe_allow_html=True)
-        st.markdown("<h1 style='text-align:center;'>Morning Ink</h1>", unsafe_allow_html=True)
-        
-        # This part pulls from your content.js logic
-        word = "Courage" 
-        question = "If you had 20% more courage today, what would you do differently?"
-        
-        st.markdown(f"<div class='mantra-text'>{word}</div>", unsafe_allow_html=True)
-        
-        with st.container():
-            st.markdown(f"""
-                <div class="journal-page">
-                    <div style="font-family:'Lora'; font-style:italic; font-size:1.3rem; margin-bottom:20px; text-align:center;">
-                        {question}
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            # Writing Space
-            entry = st.text_area("Your Soul's Draft", height=400, label_visibility="collapsed")
-            
-            if st.button("Seal Today's Entry"):
-                c = conn.cursor()
-                # Check if entry exists for today
-                c.execute('SELECT * FROM journal WHERE username=? AND date=?', (st.session_state['username'], today))
-                if c.fetchone():
-                    c.execute('UPDATE journal SET content=? WHERE username=? AND date=?', (entry, st.session_state['username'], today))
-                else:
-                    c.execute('INSERT INTO journal(username, date, content, word, question) VALUES (?,?,?,?,?)', 
-                              (st.session_state['username'], today, entry, word, question))
-                conn.commit()
-                st.balloons()
-                st.success("Your thoughts have been safely locked in the vault.")
+    data = get_daily_content()
 
-    # --- PAGE: THE GRAND LIBRARY ---
-    elif page == "The Grand Library":
-        st.markdown("<h1>The Grand Library</h1>", unsafe_allow_html=True)
-        st.write("Click on a past date to reopen the book of your memories.")
+    if choice == "Today's Ink":
+        st.markdown(f"<div class='mantra-display'>{data['word']}</div>", unsafe_allow_html=True)
         
+        st.markdown(f"""
+            <div class="journal-page">
+                <p style="text-align:center; color:#9A8C98; font-size:0.8rem; letter-spacing:2px;">{datetime.date.today().strftime('%A, %B %d')}</p>
+                <h3 style="text-align:center; font-style:italic; margin-top:10px;">“{data['question']}”</h3>
+                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+                <p style="font-size:0.85rem; color:#888;"><b>Historical Inspiration:</b> {data['history']}</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Load existing entry if it exists
         c = conn.cursor()
-        c.execute('SELECT date, word, content, question FROM journal WHERE username=? ORDER BY date DESC', (st.session_state['username'],))
-        entries = c.fetchall()
+        today_date = datetime.date.today().strftime("%Y-%m-%d")
+        c.execute('SELECT content FROM journal WHERE username=? AND date=?', (user, today_date))
+        existing = c.fetchone()
         
-        if not entries:
-            st.info("The library is currently empty. Write your first page today.")
-        else:
-            for row in entries:
-                with st.expander(f"📖 {row[0]} — Mantra: {row[1]}"):
-                    st.markdown(f"""
-                    <div class="journal-page" style="box-shadow:none; border: 1px solid #eee;">
-                        <p><strong>Prompt:</strong> <em>{row[3]}</em></p>
-                        <hr>
-                        <p style="font-family:'Lora'; white-space: pre-wrap;">{row[2]}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+        val = existing[0] if existing else ""
+        entry = st.text_area("Write...", value=val, height=450, label_visibility="collapsed")
+        
+        if st.button("Seal the Page"):
+            if existing:
+                c.execute('UPDATE journal SET content=? WHERE username=? AND date=?', (entry, user, today_date))
+            else:
+                c.execute('INSERT INTO journal(username, date, content, word, question) VALUES (?,?,?,?,?)', 
+                          (user, today_date, entry, data['word'], data['question']))
+            conn.commit()
+            st.toast("Locked in the vault.")
 
-# --- ROUTING ---
+    elif choice == "The Archive":
+        st.markdown("<h1>The Grand Library</h1>", unsafe_allow_html=True)
+        c = conn.cursor()
+        c.execute('SELECT date, word, content FROM journal WHERE username=? ORDER BY date DESC', (user,))
+        rows = c.fetchall()
+        
+        for r in rows:
+            with st.expander(f"📖 {r[0]} — {r[1]}"):
+                st.markdown(f"""
+                <div class="journal-page">
+                    <p style="white-space: pre-wrap; font-family:'Lora';">{r[2]}</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+# --- EXECUTION ---
 if not st.session_state['logged_in']:
-    auth_screen()
+    auth_flow()
 else:
     main_app()
