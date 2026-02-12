@@ -1,238 +1,224 @@
 import streamlit as st
+import sqlite3
 import datetime
+import hashlib
 import json
 import re
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="Morare", page_icon="🌙", layout="centered")
+# --- DATABASE SETUP ---
+def init_db():
+    conn = sqlite3.connect('morare_vault.db', check_same_thread=False)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY, password TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS journal (username TEXT, date TEXT, content TEXT, word TEXT, question TEXT)''')
+    conn.commit()
+    return conn
 
-# --- DATA PARSING ENGINE ---
-def load_js_data():
-    """Expert-level regex parser to read JS objects from content.js as Python Dicts/Lists"""
-    try:
-        with open('content.js', 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # 1. Parse Astrology Events
-        astro_match = re.search(r'astrologyEvents2026 = (\{.*?\});', content, re.DOTALL)
-        astro_data = {}
-        if astro_match:
-            data_str = astro_match.group(1)
-            # Make JS keys JSON compatible (wrap keys in quotes)
-            data_str = re.sub(r'(\s)(\w+):', r'\1"\2":', data_str)
-            # Remove trailing commas that break JSON
-            data_str = re.sub(r',\s*\}', '}', data_str)
-            astro_data = json.loads(data_str)
+conn = init_db()
 
-        # 2. Parse Lists (Questions, History, Quotes)
-        def get_list(var_name):
-            match = re.search(rf'{var_name} = \[(.*?)\];', content, re.DOTALL)
-            if match:
-                items = re.findall(r'"(.*?)"', match.group(1))
-                return items
-            return []
+# --- SECURITY ---
+def make_hashes(password): return hashlib.sha256(str.encode(password)).hexdigest()
+def check_hashes(password, hashed_text): return make_hashes(password) == hashed_text
 
-        return {
-            "events": astro_data,
-            "questions": get_list("dailyQuestions"),
-            "history": get_list("historicalInspirations"),
-            "quotes": get_list("poeticQuotes")
-        }
-    except Exception as e:
-        st.error(f"Error loading content.js: {e}")
-        return {"events": {}, "questions": [], "history": [], "quotes": []}
+# --- UI CONFIG ---
+st.set_page_config(page_title="Morare | Your Private Vault", page_icon="📜", layout="centered")
 
-# --- STYLING (The Journal UI/UX) ---
+# --- IMMERSIVE JOURNAL CSS ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap');
 
-    /* Global Body */
+    /* The "Old World" Aesthetic */
     .stApp {
-        background-color: #F9F7F2; /* Warm paper color */
+        background: radial-gradient(circle, #fdfcf0 0%, #f2efe2 100%);
     }
 
-    .main .block-container {
-        max-width: 600px;
-        padding-top: 3rem;
+    /* Journal Book UI */
+    .journal-page {
+        background: #fffdfa;
+        padding: 50px;
+        border-radius: 5px;
+        box-shadow: 
+            5px 5px 20px rgba(0,0,0,0.05),
+            inset 0 0 100px rgba(220,210,190,0.2);
+        border: 1px solid #dcd1be;
+        margin-bottom: 30px;
+        position: relative;
     }
 
-    /* Branding */
-    .brand-name {
-        font-family: 'Lora', serif;
-        font-size: 3.2rem;
-        text-align: center;
-        color: #2A2A2A;
-        margin-bottom: 0px;
+    /* The Spine Shadow */
+    .journal-page::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 30px;
+        background: linear-gradient(to right, rgba(0,0,0,0.05), transparent);
     }
 
-    .date-header {
-        text-align: center;
-        text-transform: uppercase;
-        letter-spacing: 3px;
-        font-size: 0.8rem;
-        color: #9A8C98;
-        margin-bottom: 40px;
+    h1, h2, .brand {
+        font-family: 'Playfair Display', serif;
+        color: #2c2c2c;
     }
 
-    /* Word of the Day Mantra */
-    .word-label {
-        text-align: center;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 4px;
-        color: #9A8C98;
-        margin-bottom: 5px;
-    }
-    .word-text {
-        font-family: 'Lora', serif;
+    .mantra-text {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
         font-size: 2.2rem;
         text-align: center;
-        color: #4A4A4A;
-        margin-bottom: 30px;
+        color: #5d5d5d;
+        margin: 20px 0;
     }
 
-    /* The Astrology Card */
-    .astro-card {
-        background: white;
-        padding: 35px;
-        border-radius: 2px;
-        border: 1px solid #EAE5D9;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.04);
-        margin-bottom: 30px;
-    }
-
-    .astro-title {
-        font-family: 'Lora', serif;
-        font-size: 1.5rem;
-        color: #2A2A2A;
-        margin-bottom: 12px;
-        border-bottom: 1px solid #F9F7F2;
-        padding-bottom: 10px;
-    }
-
-    .astro-meaning {
-        font-weight: 300;
-        color: #6B6B6B;
-        font-size: 1rem;
-        line-height: 1.7;
-        margin-bottom: 25px;
-    }
-
-    /* History & Prompt UI */
-    .history-box {
-        background: #FDFBFA;
-        padding: 20px;
-        border-radius: 4px;
-        border-left: 2px solid #9A8C98;
-        font-size: 0.9rem;
-        color: #5A5A5A;
-        margin-bottom: 25px;
-    }
-
-    .prompt-text {
-        font-family: 'Lora', serif;
-        font-style: italic;
-        font-size: 1.2rem;
-        color: #2A2A2A;
-        text-align: center;
-        padding: 10px 0;
-    }
-
-    /* THE LINED PAPER TEXT AREA */
+    /* Paper Lines */
     div[data-baseweb="textarea"] {
-        background-color: white !important;
-        border: 1px solid #EAE5D9 !important;
-        border-radius: 0px !important;
-        padding: 10px !important;
-        /* Red Margin Line */
-        background-image: 
-            linear-gradient(to right, transparent 39px, #FADADD 40px, transparent 41px),
-            linear-gradient(#EEEBDD 1px, transparent 1px) !important;
-        background-size: 100% 100%, 100% 2.5rem !important; /* Lines every 2.5rem */
+        background-color: transparent !important;
+        border: none !important;
     }
-
     textarea {
-        background: transparent !important;
+        background: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px) !important;
+        line-height: 32px !important;
         font-family: 'Lora', serif !important;
-        font-size: 1.15rem !important;
-        line-height: 2.5rem !important; /* Must match the background-size above */
-        padding-left: 50px !important; /* Space for the red margin */
-        color: #3E3E3E !important;
+        font-size: 1.1rem !important;
+        color: #3b3b3b !important;
+        padding-left: 10px !important;
     }
 
-    /* Poetic Quote */
-    .quote-footer {
+    /* Buttons Styling */
+    .stButton>button {
+        background-color: #4a4a4a;
+        color: white;
+        border-radius: 0px;
+        font-family: 'Inter', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border: none;
+        padding: 10px 25px;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #9A8C98;
+        color: white;
+    }
+
+    /* Archive Grid */
+    .archive-card {
+        background: #eeebe3;
+        padding: 15px;
+        border: 1px solid #d1cdbf;
+        cursor: pointer;
+        transition: 0.2s;
         font-family: 'Lora', serif;
-        font-style: italic;
-        text-align: center;
-        padding: 40px 20px;
-        color: #9A8C98;
-        font-size: 1.05rem;
-        line-height: 1.6;
     }
-
-    /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+    .archive-card:hover { background: #e5e2d6; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- APP LOGIC ---
-data = load_js_data()
-today = datetime.date.today()
-date_str = today.strftime("%Y-%m-%d")
-day_index = today.timetuple().tm_yday # Used for rotating content
+# --- AUTHENTICATION LOGIC ---
+if 'logged_in' not in st.session_state: st.session_state['logged_in'] = False
 
-# 1. Header & Date
-st.markdown(f'<div class="date-header">{today.strftime("%A, %B %d")}</div>', unsafe_allow_html=True)
-st.markdown('<h1 class="brand-name">Morare</h1>', unsafe_allow_html=True)
+def auth_screen():
+    st.markdown("<h1 style='text-align:center;'>Morare</h1>", unsafe_allow_html=True)
+    tab1, tab2 = st.tabs(["Sign In", "Open New Vault"])
+    
+    with tab1:
+        user = st.text_input("Username", key="login_user")
+        pw = st.text_input("Password", type="password", key="login_pw")
+        if st.button("Enter Vault"):
+            c = conn.cursor()
+            c.execute('SELECT password FROM users WHERE username =?', (user,))
+            data = c.fetchone()
+            if data and check_hashes(pw, data[0]):
+                st.session_state['logged_in'] = True
+                st.session_state['username'] = user
+                st.rerun()
+            else:
+                st.error("The key does not fit this lock.")
 
-# 2. Determine Event and Word
-event = data['events'].get(date_str)
-if not event:
-    # Integration Day Logic
-    grounding_words = ["Balance", "Presence", "Grounding", "Peace", "Stillness", "Breath"]
-    word = grounding_words[day_index % len(grounding_words)]
-    title = "Integration Period"
-    meaning = "No major celestial shift today. The work is internal. Integration is where growth becomes permanent."
+    with tab2:
+        new_user = st.text_input("Choose Username")
+        new_pw = st.text_input("Choose Password", type="password")
+        if st.button("Create Vault"):
+            try:
+                c = conn.cursor()
+                c.execute('INSERT INTO users(username,password) VALUES (?,?)', (new_user, make_hashes(new_pw)))
+                conn.commit()
+                st.success("Vault Created. You may now sign in.")
+            except:
+                st.error("This username is already claimed.")
+
+# --- MAIN APP INTERFACE ---
+def main_app():
+    # Sidebar Navigation
+    with st.sidebar:
+        st.markdown(f"### Welcome, {st.session_state['username']}")
+        page = st.radio("Navigate", ["Today's Reflection", "The Grand Library", "Account Settings"])
+        if st.button("Close Vault"):
+            st.session_state['logged_in'] = False
+            st.rerun()
+
+    # --- PAGE: TODAY'S REFLECTION ---
+    if page == "Today's Reflection":
+        # Load your content logic here (Simplified for the example)
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        
+        st.markdown(f"<div class='date-label' style='text-align:center;'>{datetime.date.today().strftime('%B %d, %Y')}</div>", unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align:center;'>Morning Ink</h1>", unsafe_allow_html=True)
+        
+        # This part pulls from your content.js logic
+        word = "Courage" 
+        question = "If you had 20% more courage today, what would you do differently?"
+        
+        st.markdown(f"<div class='mantra-text'>{word}</div>", unsafe_allow_html=True)
+        
+        with st.container():
+            st.markdown(f"""
+                <div class="journal-page">
+                    <div style="font-family:'Lora'; font-style:italic; font-size:1.3rem; margin-bottom:20px; text-align:center;">
+                        {question}
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
+            
+            # Writing Space
+            entry = st.text_area("Your Soul's Draft", height=400, label_visibility="collapsed")
+            
+            if st.button("Seal Today's Entry"):
+                c = conn.cursor()
+                # Check if entry exists for today
+                c.execute('SELECT * FROM journal WHERE username=? AND date=?', (st.session_state['username'], today))
+                if c.fetchone():
+                    c.execute('UPDATE journal SET content=? WHERE username=? AND date=?', (entry, st.session_state['username'], today))
+                else:
+                    c.execute('INSERT INTO journal(username, date, content, word, question) VALUES (?,?,?,?,?)', 
+                              (st.session_state['username'], today, entry, word, question))
+                conn.commit()
+                st.balloons()
+                st.success("Your thoughts have been safely locked in the vault.")
+
+    # --- PAGE: THE GRAND LIBRARY ---
+    elif page == "The Grand Library":
+        st.markdown("<h1>The Grand Library</h1>", unsafe_allow_html=True)
+        st.write("Click on a past date to reopen the book of your memories.")
+        
+        c = conn.cursor()
+        c.execute('SELECT date, word, content, question FROM journal WHERE username=? ORDER BY date DESC', (st.session_state['username'],))
+        entries = c.fetchall()
+        
+        if not entries:
+            st.info("The library is currently empty. Write your first page today.")
+        else:
+            for row in entries:
+                with st.expander(f"📖 {row[0]} — Mantra: {row[1]}"):
+                    st.markdown(f"""
+                    <div class="journal-page" style="box-shadow:none; border: 1px solid #eee;">
+                        <p><strong>Prompt:</strong> <em>{row[3]}</em></p>
+                        <hr>
+                        <p style="font-family:'Lora'; white-space: pre-wrap;">{row[2]}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+# --- ROUTING ---
+if not st.session_state['logged_in']:
+    auth_screen()
 else:
-    word = event.get('word', 'Presence')
-    title = event['title']
-    meaning = event['meaning']
-
-# 3. Render Mantra & Astrology Card
-st.markdown(f'<div class="word-label">Mantra of the Day</div>', unsafe_allow_html=True)
-st.markdown(f'<div class="word-text">{word}</div>', unsafe_allow_html=True)
-
-# Select rotating content
-current_history = data['history'][day_index % len(data['history'])] if data['history'] else "No history today."
-current_prompt = data['questions'][day_index % len(data['questions'])] if data['questions'] else "What is on your heart?"
-current_quote = data['quotes'][day_index % len(data['quotes'])] if data['quotes'] else "Live your truth."
-
-st.markdown(f"""
-    <div class="astro-card">
-        <div class="astro-title">{title}</div>
-        <div class="astro-meaning">{meaning}</div>
-        <div class="history-box">
-            <strong>Historical Resilience:</strong><br>{current_history}
-        </div>
-        <div class="prompt-text">“{current_prompt}”</div>
-    </div>
-""", unsafe_allow_html=True)
-
-# 4. Journal Paper (Input)
-user_entry = st.text_area("Journal Entry", height=400, label_visibility="collapsed", placeholder="Let the ink flow...")
-
-# 5. Footer Quote
-st.markdown(f'<div class="quote-footer">{current_quote}</div>', unsafe_allow_html=True)
-
-# --- SAVE FEATURE (Optional Mockup) ---
-if user_entry:
-    st.download_button(
-        label="Download Today's Entry",
-        data=f"Morare Entry - {date_str}\n\nMantra: {word}\n\n{user_entry}",
-        file_name=f"morare_{date_str}.txt",
-        mime="text/plain"
-    )
+    main_app()
