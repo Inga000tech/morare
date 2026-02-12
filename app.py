@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import json
 import re
+import os
 
 # --- DATABASE SETUP ---
 def init_db():
@@ -16,191 +17,192 @@ def init_db():
 
 conn = init_db()
 
-# --- SECURITY ---
-def make_hashes(password): 
-    return hashlib.sha256(str.encode(password)).hexdigest()
+# --- SECURITY UTILS ---
+def make_hashes(password): return hashlib.sha256(str.encode(password)).hexdigest()
+def check_hashes(password, hashed_text): return make_hashes(password) == hashed_text
 
-def check_hashes(password, hashed_text): 
-    return make_hashes(password) == hashed_text
+# --- DATA PARSER ---
+def load_morare_data():
+    """Reads the content.js file to pull astrology, history, prompts, and quotes."""
+    try:
+        with open('content.js', 'r', encoding='utf-8') as f:
+            js_content = f.read()
+        
+        # Helper to extract JS arrays/objects via Regex
+        def extract_list(var_name):
+            match = re.search(rf'{var_name} = \[(.*?)\];', js_content, re.DOTALL)
+            if match:
+                items = re.findall(r'"(.*?)"', match.group(1))
+                return items
+            return []
 
-# --- UI CONFIG ---
+        # Extract Astrology (simplified for Python)
+        astro_match = re.search(r'astrologyEvents2026 = (\{.*?\});', js_content, re.DOTALL)
+        astro_dict = {}
+        if astro_match:
+            # Clean up the JS to be JSON-like
+            clean_js = re.sub(r'(\w+):', r'"\1":', astro_match.group(1))
+            clean_js = re.sub(r',\s*\}', '}', clean_js)
+            astro_dict = json.loads(clean_js)
+
+        return {
+            "events": astro_dict,
+            "questions": extract_list("dailyQuestions"),
+            "history": extract_list("historicalInspirations"),
+            "quotes": extract_list("poeticQuotes")
+        }
+    except:
+        return {"events": {}, "questions": ["What is on your heart today?"], "history": ["Resilience is human."], "quotes": ["Live fully."]}
+
+# --- UI / UX DESIGN (Old Book Aesthetics) ---
 st.set_page_config(page_title="Morare", page_icon="📜", layout="centered")
 
-# --- IMMERSIVE JOURNAL CSS ---
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@300;400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;1,400&family=Inter:wght@300;400;500&display=swap');
 
-    .stApp { background: #f2efe2; }
+    /* The 'Safe Space' Palette */
+    .stApp { background-color: #F4F1EA; } /* Aged paper background */
 
-    /* The Journal Page Look */
-    .journal-page {
+    .main .block-container { max-width: 650px; padding-top: 2rem; }
+
+    /* The Journal Page Structure */
+    .paper-sheet {
         background: #fffdfa;
-        padding: 40px;
+        padding: 60px 50px;
         border-radius: 2px;
-        box-shadow: 10px 10px 30px rgba(0,0,0,0.05);
-        border: 1px solid #dcd1be;
-        margin-bottom: 20px;
+        box-shadow: 5px 5px 15px rgba(0,0,0,0.03), 0 0 40px rgba(0,0,0,0.02) inset;
+        border: 1px solid #DCD1BE;
+        margin-bottom: 2rem;
         position: relative;
     }
-    
-    /* Binding shadow */
-    .journal-page::after {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; bottom: 0;
-        width: 15px;
-        background: linear-gradient(to right, rgba(0,0,0,0.08), transparent);
+
+    /* Spine Shadow for 'Book' feel */
+    .paper-sheet::before {
+        content: ""; position: absolute; top: 0; left: 0; bottom: 0; width: 40px;
+        background: linear-gradient(to right, rgba(0,0,0,0.06), transparent);
     }
 
-    h1, h2, h3 { font-family: 'Playfair Display', serif !important; color: #2c2c2c; }
-    p, span { font-family: 'Lora', serif; }
+    h1, h2, h3 { font-family: 'Playfair Display', serif !important; color: #2C2C2C; }
+    .mantra { font-family: 'Playfair Display', serif; font-style: italic; font-size: 3rem; text-align: center; color: #4A4A4A; margin-bottom: 10px; }
+    .date-label { font-family: 'Inter', sans-serif; text-transform: uppercase; letter-spacing: 3px; font-size: 0.75rem; color: #9A8C98; text-align: center; }
 
-    .mantra-display {
-        text-align: center;
-        font-family: 'Playfair Display', serif;
-        font-style: italic;
-        font-size: 2.8rem;
-        color: #5d5d5d;
-        margin-bottom: 30px;
-    }
-
-    /* Styling the Lined Paper Input */
+    /* Styled Paper Lines for Input */
+    div[data-baseweb="textarea"] { background: transparent !important; border: none !important; }
     textarea {
-        background: repeating-linear-gradient(transparent, transparent 31px, #e5e5e5 32px) !important;
-        line-height: 32px !important;
+        background: repeating-linear-gradient(transparent, transparent 34px, #E8E2D5 35px) !important;
+        line-height: 35px !important;
         font-family: 'Lora', serif !important;
-        font-size: 1.15rem !important;
-        color: #3b3b3b !important;
+        font-size: 1.2rem !important;
+        color: #3B3B3B !important;
+        padding-top: 8px !important;
         border: none !important;
     }
 
-    /* Center the login box */
-    .login-container {
-        max-width: 400px;
-        margin: auto;
-        padding: 30px;
-        background: white;
-        border-radius: 8px;
-    }
+    .info-box { font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #6B6B6B; line-height: 1.6; border-top: 1px solid #EEEBDD; padding-top: 20px; margin-top: 20px; }
+    .quote-footer { font-family: 'Lora', serif; font-style: italic; color: #9A8C98; text-align: center; padding: 40px 0; font-size: 1.1rem; }
 
-    /* Hide UI clutter */
-    header {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    /* Sidebar and Auth UI */
+    .stSidebar { background-color: #EBE7DD !important; border-right: 1px solid #DCD1BE; }
+    header, footer { visibility: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
-# --- CONTENT LOADER (Integrated for speed) ---
-def get_daily_content():
-    # Fallback content if content.js isn't found
-    today_key = datetime.date.today().strftime("%Y-%m-%d")
-    return {
-        "word": "Clarity",
-        "question": "What is one thing you are doing today purely because you want to?",
-        "history": "Ernest Shackleton’s Endurance: After their ship was crushed by ice, he led his crew to safety over 800 miles of ocean.",
-        "quote": "The best way out is always through. — Robert Frost"
-    }
+# --- APP LOGIC ---
+data = load_morare_data()
+today_obj = datetime.date.today()
+date_str = today_obj.strftime("%Y-%m-%d")
+day_idx = today_obj.timetuple().tm_yday
 
-# --- AUTHENTICATION SCREENS ---
-if 'logged_in' not in st.session_state:
-    st.session_state['logged_in'] = False
+# Determine Content
+event = data['events'].get(date_str, {"word": "Stillness", "title": "Integration", "meaning": "A quiet day for the soul."})
+word = event.get('word', 'Presence')
+question = data['questions'][day_idx % len(data['questions'])]
+history = data['history'][day_idx % len(data['history'])]
+quote = data['quotes'][day_idx % len(data['quotes'])]
 
-def auth_flow():
-    st.markdown("<h1 style='text-align:center;'>Morare</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align:center;'>Your Private Sanctuary</p>", unsafe_allow_html=True)
-    
-    tab1, tab2 = st.tabs(["Sign In", "Create Vault"])
-    
-    with tab1:
-        user = st.text_input("Username", key="l_user")
-        pw = st.text_input("Password", type="password", key="l_pw")
-        if st.button("Open Vault"):
-            c = conn.cursor()
-            c.execute('SELECT password FROM users WHERE username =?', (user,))
-            data = c.fetchone()
-            if data and check_hashes(pw, data[0]):
-                st.session_state['logged_in'] = True
-                st.session_state['username'] = user
-                st.rerun()
-            else:
-                st.error("The key does not fit this lock.")
+# --- GUEST-FIRST DISPLAY ---
+st.markdown(f'<div class="date-label">{today_obj.strftime("%A, %B %d")}</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="mantra">{word}</div>', unsafe_allow_html=True)
 
-    with tab2:
-        new_user = st.text_input("New Username", key="r_user")
-        new_pw = st.text_input("New Password", type="password", key="r_pw")
-        if st.button("Forge Key"):
-            if new_user and new_pw:
+# THE PAPER INTERFACE
+st.markdown(f"""
+    <div class="paper-sheet">
+        <h3 style="text-align:center; margin-bottom:30px;">“{question}”</h3>
+        <div class="info-box">
+            <strong>Today's Transit:</strong> {event['title']}<br>
+            <span style="font-style:italic;">{event['meaning']}</span>
+        </div>
+        <div class="info-box" style="border:none;">
+            <strong>Echoes of Humanity:</strong> {history}
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# Writing Area (Always Visible)
+user_text = st.text_area("Write...", placeholder="Begin your journey here...", height=400, label_visibility="collapsed")
+
+# --- ACCOUNT / PERSISTENCE LAYER ---
+if 'user' not in st.session_state:
+    st.session_state['user'] = None
+
+# Sidebar for Login/Signup
+with st.sidebar:
+    st.markdown("### Your Private Vault")
+    if st.session_state['user'] is None:
+        auth_mode = st.radio("Access", ["Guest Mode", "Sign In", "Create Vault"])
+        
+        if auth_mode == "Sign In":
+            u = st.text_input("Username")
+            p = st.text_input("Password", type="password")
+            if st.button("Unlock"):
+                c = conn.cursor()
+                c.execute('SELECT password FROM users WHERE username=?', (u,))
+                row = c.fetchone()
+                if row and check_hashes(p, row[0]):
+                    st.session_state['user'] = u
+                    st.rerun()
+                else: st.error("Incorrect key.")
+        
+        elif auth_mode == "Create Vault":
+            new_u = st.text_input("New Username")
+            new_p = st.text_input("New Password", type="password")
+            if st.button("Forge Vault"):
                 try:
                     c = conn.cursor()
-                    c.execute('INSERT INTO users(username,password) VALUES (?,?)', (new_user, make_hashes(new_pw)))
+                    c.execute('INSERT INTO users VALUES (?,?)', (new_u, make_hashes(new_p)))
                     conn.commit()
-                    st.success("Vault Created. You may now sign in.")
-                except:
-                    st.error("This username is already claimed.")
-            else:
-                st.warning("Please provide a name and a key.")
+                    st.success("Vault created. Switch to Sign In.")
+                except: st.error("Name taken.")
+    else:
+        st.write(f"Logged in as: **{st.session_state['user']}**")
+        nav = st.selectbox("Library", ["Today", "The Archive"])
+        if st.button("Lock Vault (Logout)"):
+            st.session_state['user'] = None
+            st.rerun()
 
-# --- MAIN APP ---
-def main_app():
-    user = st.session_state['username']
-    
-    with st.sidebar:
-        st.markdown(f"### 🖋️ {user}")
-        choice = st.radio("Navigation", ["Today's Ink", "The Archive", "Logout"])
-        
-    if choice == "Logout":
-        st.session_state['logged_in'] = False
-        st.rerun()
-
-    data = get_daily_content()
-
-    if choice == "Today's Ink":
-        st.markdown(f"<div class='mantra-display'>{data['word']}</div>", unsafe_allow_html=True)
-        
-        st.markdown(f"""
-            <div class="journal-page">
-                <p style="text-align:center; color:#9A8C98; font-size:0.8rem; letter-spacing:2px;">{datetime.date.today().strftime('%A, %B %d')}</p>
-                <h3 style="text-align:center; font-style:italic; margin-top:10px;">“{data['question']}”</h3>
-                <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
-                <p style="font-size:0.85rem; color:#888;"><b>Historical Inspiration:</b> {data['history']}</p>
-            </div>
-        """, unsafe_allow_html=True)
-
-        # Load existing entry if it exists
+# --- SAVING LOGIC ---
+if st.button("Save Reflection"):
+    if st.session_state['user']:
         c = conn.cursor()
-        today_date = datetime.date.today().strftime("%Y-%m-%d")
-        c.execute('SELECT content FROM journal WHERE username=? AND date=?', (user, today_date))
-        existing = c.fetchone()
-        
-        val = existing[0] if existing else ""
-        entry = st.text_area("Write...", value=val, height=450, label_visibility="collapsed")
-        
-        if st.button("Seal the Page"):
-            if existing:
-                c.execute('UPDATE journal SET content=? WHERE username=? AND date=?', (entry, user, today_date))
-            else:
-                c.execute('INSERT INTO journal(username, date, content, word, question) VALUES (?,?,?,?,?)', 
-                          (user, today_date, entry, data['word'], data['question']))
-            conn.commit()
-            st.toast("Locked in the vault.")
+        c.execute('SELECT * FROM journal WHERE username=? AND date=?', (st.session_state['user'], date_str))
+        if c.fetchone():
+            c.execute('UPDATE journal SET content=? WHERE username=? AND date=?', (user_text, st.session_state['user'], date_str))
+        else:
+            c.execute('INSERT INTO journal VALUES (?,?,?,?,?)', (st.session_state['user'], date_str, user_text, word, question))
+        conn.commit()
+        st.success("Safely stored in your vault.")
+    else:
+        st.info("💡 You are in Guest Mode. Your writing will stay until you refresh, but to save it permanently, create a Vault in the sidebar.")
 
-    elif choice == "The Archive":
-        st.markdown("<h1>The Grand Library</h1>", unsafe_allow_html=True)
-        c = conn.cursor()
-        c.execute('SELECT date, word, content FROM journal WHERE username=? ORDER BY date DESC', (user,))
-        rows = c.fetchall()
-        
-        for r in rows:
-            with st.expander(f"📖 {r[0]} — {r[1]}"):
-                st.markdown(f"""
-                <div class="journal-page">
-                    <p style="white-space: pre-wrap; font-family:'Lora';">{r[2]}</p>
-                </div>
-                """, unsafe_allow_html=True)
+# Archive View (Only if logged in)
+if st.session_state['user'] and 'nav' in locals() and nav == "The Archive":
+    st.markdown("---")
+    st.markdown("### The Grand Library")
+    c = conn.cursor()
+    c.execute('SELECT date, content, word FROM journal WHERE username=? ORDER BY date DESC', (st.session_state['user'],))
+    for row in c.fetchall():
+        with st.expander(f"📜 {row[0]} | Mantra: {row[2]}"):
+            st.markdown(f'<div class="paper-sheet" style="padding:20px; box-shadow:none; border-color:#eee;">{row[1]}</div>', unsafe_allow_html=True)
 
-# --- EXECUTION ---
-if not st.session_state['logged_in']:
-    auth_flow()
-else:
-    main_app()
+st.markdown(f'<div class="quote-footer">"{quote}"</div>', unsafe_allow_html=True)
