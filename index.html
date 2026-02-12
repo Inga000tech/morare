@@ -1,176 +1,228 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Morare</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morare | Daily Guidance</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 
-<style>
-body {
-  margin: 0;
-  background: #f5f3ef;
-  color: #1f1f1f;
-  font-family: Georgia, serif;
-}
+    <style>
+        /* --- CSS VARIABLES (Theme) --- */
+        :root {
+            --bg-color: #F9F7F2; /* Warm paper */
+            --card-bg: #FFFFFF;
+            --text-main: #2A2A2A;
+            --text-muted: #6B6B6B;
+            --accent-color: #9A8C98; /* Muted Mauve/Taupe */
+            --border-color: #EAE5D9;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.05);
+        }
 
-.container {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 60px 24px 120px;
-}
+        /* --- RESET & BASE --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            /* Smooth fade-in on load */
+            animation: breatheIn 1.5s ease-out forwards;
+        }
 
-.date {
-  text-align: center;
-  font-size: 14px;
-  letter-spacing: 1px;
-  color: #777;
-}
+        /* --- LAYOUT --- */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
-.word {
-  text-align: center;
-  font-size: 56px;
-  margin: 20px 0 40px;
-}
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
 
-.section-title {
-  font-size: 14px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-top: 40px;
-  color: #555;
-}
+        .date-display {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
 
-.history-box {
-  margin-top: 10px;
-  line-height: 1.6;
-}
+        .brand-name {
+            font-family: 'Lora', serif;
+            font-size: 2.5rem;
+            font-weight: 400;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+        }
 
-.quote {
-  text-align: center;
-  font-style: italic;
-  font-size: 22px;
-  margin: 60px 0;
-}
+        /* --- MAIN CARD (Astrology) --- */
+        .card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 2px; /* Slight roundness, keeping it book-like */
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            margin-bottom: 30px;
+        }
 
-.grounding {
-  background: #e9e6df;
-  padding: 24px;
-  margin: 40px 0;
-}
+        /* Decorative top line */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
 
-textarea {
-  width: 100%;
-  height: 180px;
-  border: none;
-  padding: 20px;
-  font-size: 16px;
-  font-family: Georgia, serif;
-  background: repeating-linear-gradient(
-    to bottom,
-    #ffffff,
-    #ffffff 28px,
-    #f2f2f2 29px
-  );
-}
+        .astro-title {
+            font-family: 'Lora', serif;
+            font-size: 1.75rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            line-height: 1.3;
+            text-align: center;
+        }
 
-button {
-  margin-top: 16px;
-  padding: 12px 18px;
-  background: #1f1f1f;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
+        .astro-meaning {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 300;
+        }
 
-.nav {
-  text-align: center;
-  margin-top: 40px;
-}
+        /* --- REFLECTION SECTION --- */
+        .reflection-container {
+            text-align: center;
+            padding: 20px 40px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
 
-.nav a {
-  margin: 0 12px;
-  cursor: pointer;
-  color: #444;
-}
-</style>
+        .prompt-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .daily-question {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: 50px;
+            font-size: 0.75rem;
+            color: #B0B0B0;
+            text-align: center;
+        }
+
+        /* --- ANIMATION --- */
+        @keyframes breatheIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- MOBILE TWEAKS --- */
+        @media (max-width: 600px) {
+            .card { padding: 30px 20px; }
+            .brand-name { font-size: 2rem; }
+            .astro-title { font-size: 1.5rem; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="container">
+        <header>
+            <div class="date-display" id="dateDisplay">Loading Date...</div>
+            <h1 class="brand-name">Morare</h1>
+        </header>
 
-<div class="date" id="date"></div>
-<div class="word" id="word"></div>
+        <main>
+            <div class="card">
+                <h2 class="astro-title" id="eventTitle">...</h2>
+                <p class="astro-meaning" id="eventMeaning">...</p>
+            </div>
 
-<div class="section-title">Astrology</div>
-<div class="history-box" id="astroTitle"></div>
-<div class="history-box" id="astroMeaning"></div>
+            <div class="reflection-container">
+                <span class="prompt-label">Journal Prompt</span>
+                <p class="daily-question" id="dailyQuestion">...</p>
+            </div>
+        </main>
 
-<div class="quote" id="quote"></div>
+        <footer>
+            <p>Astrology of 2026</p>
+        </footer>
+    </div>
 
-<div class="section-title">Reflection</div>
-<div class="grounding" id="question"></div>
+    <script type="module">
+        // Import data from your content.js file
+        // Ensure content.js is in the same folder
+        import { astrologyEvents2026, getIntegrationText, dailyQuestions } from './content.js';
 
-<textarea id="journal" placeholder="Write without editing yourself."></textarea>
-<button onclick="saveEntry()">Save Entry</button>
+        // 1. Get Current Date (Local Time)
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        // Pads month/day with zero (e.g., '02' instead of '2')
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        
+        // Formatted string for lookup: "2026-02-13"
+        const dateKey = `${yyyy}-${mm}-${dd}`;
+        
+        // Formatted string for Display: "February 13, 2026"
+        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+        document.getElementById('dateDisplay').textContent = today.toLocaleDateString('en-US', options);
 
-<div class="nav">
-  <a onclick="changeDay(-1)">Yesterday</a>
-  <a onclick="changeDay(1)">Tomorrow</a>
-</div>
+        // 2. Logic: Event vs Integration
+        const event = astrologyEvents2026[dateKey];
+        
+        if (event) {
+            // It's a major event day
+            document.getElementById('eventTitle').textContent = event.title;
+            document.getElementById('eventMeaning').textContent = event.meaning;
+        } else {
+            // It's an integration day
+            const integration = getIntegrationText(dateKey);
+            document.getElementById('eventTitle').textContent = integration.title;
+            document.getElementById('eventMeaning').textContent = integration.meaning;
+        }
 
-</div>
+        // 3. Logic: Rotate Questions Daily
+        // This math ensures the question changes every 24h, looping through the list
+        const startOfYear = new Date(today.getFullYear(), 0, 0);
+        const diff = today - startOfYear;
+        const oneDay = 1000 * 60 * 60 * 24;
+        const dayOfYear = Math.floor(diff / oneDay);
+        
+        // Use modulo (%) to cycle through the array safely
+        const questionIndex = dayOfYear % dailyQuestions.length;
+        document.getElementById('dailyQuestion').textContent = dailyQuestions[questionIndex];
 
-<script type="module">
-import { astrologyEvents2026, getIntegrationText } from './content.js';
-
-let currentDate = new Date();
-
-function formatDate(date) {
-  return date.toISOString().split("T")[0];
-}
-
-function loadDay(date) {
-  document.getElementById("date").innerText = date.toDateString();
-
-  const formatted = formatDate(date);
-
-  const event = astrologyEvents2026[formatted] || getIntegrationText(date);
-
-  document.getElementById("word").innerText = generateWord(date);
-  document.getElementById("astroTitle").innerText = event.title;
-  document.getElementById("astroMeaning").innerText = event.meaning;
-
-  document.getElementById("quote").innerText =
-    "“The privilege of a lifetime is to become who you truly are.” — Carl Jung";
-
-  document.getElementById("question").innerText =
-    "Where are you being asked to grow today?";
-}
-
-function generateWord(date) {
-  const words = [
-    "Initiation","Courage","Integration","Rebirth",
-    "Surrender","Momentum","Discipline","Clarity"
-  ];
-  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
-  return words[dayOfYear % words.length];
-}
-
-function changeDay(offset) {
-  currentDate.setDate(currentDate.getDate() + offset);
-  loadDay(currentDate);
-}
-
-function saveEntry() {
-  const text = document.getElementById("journal").value;
-  if (!text) return alert("Write something first.");
-  localStorage.setItem(formatDate(currentDate), text);
-  alert("Saved locally.");
-}
-
-loadDay(currentDate);
-</script>
-
+    </script>
 </body>
 </html>
