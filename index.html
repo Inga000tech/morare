@@ -1,298 +1,175 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Morare</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
 body {
   margin: 0;
+  background: #f5f3ef;
+  color: #1f1f1f;
   font-family: Georgia, serif;
-  background: #f8f7f4;
-  color: #222;
-  display: flex;
 }
 
-#sideMenu {
-  width: 260px;
-  background: #111;
-  color: white;
-  padding: 20px;
-  height: 100vh;
-  box-sizing: border-box;
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 60px 24px 120px;
 }
 
-#sideMenu h3 {
-  margin-top: 0;
-}
-
-#sideMenu button {
-  width: 100%;
-  margin: 8px 0;
-  padding: 10px;
-  background: white;
-  color: black;
-  border: none;
-  cursor: pointer;
-}
-
-#reflections-list div {
-  background: #222;
-  padding: 10px;
-  margin: 5px 0;
-  cursor: pointer;
+.date {
+  text-align: center;
   font-size: 14px;
+  letter-spacing: 1px;
+  color: #777;
 }
 
-main {
-  flex: 1;
-  padding: 60px 10%;
+.word {
+  text-align: center;
+  font-size: 56px;
+  margin: 20px 0 40px;
 }
 
-h1 {
-  font-size: 38px;
-  margin-bottom: 30px;
+.section-title {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 40px;
+  color: #555;
 }
 
-.section {
-  margin-bottom: 40px;
+.history-box {
+  margin-top: 10px;
+  line-height: 1.6;
 }
 
 .quote {
   text-align: center;
+  font-style: italic;
   font-size: 22px;
-  font-style: italic;
-  margin: 40px 0;
-}
-
-.metaphor {
-  font-style: italic;
-  margin: 20px 0;
+  margin: 60px 0;
 }
 
 .grounding {
-  background: #eceae6;
-  padding: 20px;
+  background: #e9e6df;
+  padding: 24px;
   margin: 40px 0;
 }
 
 textarea {
   width: 100%;
   height: 180px;
+  border: none;
   padding: 20px;
   font-size: 16px;
-  border: 1px solid #ddd;
+  font-family: Georgia, serif;
   background: repeating-linear-gradient(
     to bottom,
-    #fff,
-    #fff 28px,
+    #ffffff,
+    #ffffff 28px,
     #f2f2f2 29px
   );
 }
 
-button.primary {
-  margin-top: 15px;
-  padding: 12px 20px;
-  background: black;
+button {
+  margin-top: 16px;
+  padding: 12px 18px;
+  background: #1f1f1f;
   color: white;
   border: none;
   cursor: pointer;
 }
 
-#authBox {
-  margin-top: 20px;
+.nav {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.nav a {
+  margin: 0 12px;
+  cursor: pointer;
+  color: #444;
 }
 </style>
 </head>
 
 <body>
 
-<div id="sideMenu">
-  <h3>Morare</h3>
-  <button onclick="showTab('journal')">Reflection</button>
-  <button onclick="showTab('entries')">Entries</button>
-  <button onclick="logout()">Sign Out</button>
+<div class="container">
 
-  <div id="reflections-list"></div>
-</div>
+<div class="date" id="date"></div>
+<div class="word" id="word"></div>
 
-<main id="journalTab">
-
-<h1 id="word"></h1>
-
-<div class="section">
-  <strong>History</strong>
-  <p id="historyShort"></p>
-  <details>
-    <summary>Read more</summary>
-    <p id="historyLong"></p>
-  </details>
-</div>
+<div class="section-title">Astrology</div>
+<div class="history-box" id="astroTitle"></div>
+<div class="history-box" id="astroMeaning"></div>
 
 <div class="quote" id="quote"></div>
 
-<div class="metaphor" id="metaphor"></div>
+<div class="section-title">Reflection</div>
+<div class="grounding" id="question"></div>
 
-<div class="grounding">
-  <strong>Pause.</strong>
-  <p id="question"></p>
+<textarea id="journal" placeholder="Write without editing yourself."></textarea>
+<button onclick="saveEntry()">Save Entry</button>
+
+<div class="nav">
+  <a onclick="changeDay(-1)">Yesterday</a>
+  <a onclick="changeDay(1)">Tomorrow</a>
 </div>
 
-<textarea id="journal" placeholder="Write here..."></textarea>
-<button class="primary" onclick="saveEntry()">Save Entry</button>
-
-<div id="authBox"></div>
-
-</main>
+</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, addDoc, getDocs } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { astrologyEvents2026, getIntegrationText } from './content.js';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBtSwLdDy1rf4PTA17GFVlQOvswMx5F370",
-  authDomain: "morare-1c02e.firebaseapp.com",
-  projectId: "morare-1c02e",
-  storageBucket: "morare-1c02e.firebasestorage.app",
-  messagingSenderId: "906779777666",
-  appId: "1:906779777666:web:728debbec67dc83a22b29b",
-  measurementId: "G-CL6P80B4Q8"
-};
+let currentDate = new Date();
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+function formatDate(date) {
+  return date.toISOString().split("T")[0];
+}
 
-const journal = document.getElementById("journal");
-const reflectionsList = document.getElementById("reflections-list");
-const authBox = document.getElementById("authBox");
+function loadDay(date) {
+  document.getElementById("date").innerText = date.toDateString();
 
-/* ---------- DAILY CONTENT ENGINE ---------- */
+  const formatted = formatDate(date);
 
-function generateDailyContent() {
-  const today = new Date();
-  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+  const event = astrologyEvents2026[formatted] || getIntegrationText(date);
 
-  const zodiacWords = [
-    "Initiation", "Discipline", "Expansion", "Reflection",
-    "Power", "Rebirth", "Courage", "Detachment",
-    "Creation", "Stillness", "Momentum", "Integration"
-  ];
-
-  const word = zodiacWords[dayOfYear % zodiacWords.length];
-
-  document.getElementById("word").innerText = word;
-
-  document.getElementById("historyShort").innerText =
-    "On this day, leaders rose and fell, empires shifted, and quiet revolutions began.";
-
-  document.getElementById("historyLong").innerText =
-    "History reminds us that no era is permanent. The Shogun era in Japan, for example, redefined power for centuries. Control, discipline, and silence shaped an entire civilization.";
+  document.getElementById("word").innerText = generateWord(date);
+  document.getElementById("astroTitle").innerText = event.title;
+  document.getElementById("astroMeaning").innerText = event.meaning;
 
   document.getElementById("quote").innerText =
-    "“Courage is grace under pressure.” — Ernest Hemingway";
-
-  document.getElementById("metaphor").innerText =
-    "Gold forms under pressure. What pressure in your life is shaping you right now?";
+    "“The privilege of a lifetime is to become who you truly are.” — Carl Jung";
 
   document.getElementById("question").innerText =
-    "If today demanded courage from you, where would it show up first?";
+    "Where are you being asked to grow today?";
 }
 
-generateDailyContent();
-
-/* ---------- AUTH UI ---------- */
-
-function renderAuth(user) {
-  if (!user) {
-    authBox.innerHTML = `
-      <p>Create account to save entries</p>
-      <input id="email" placeholder="Email" /><br/>
-      <input id="password" type="password" placeholder="Password" /><br/>
-      <input id="birthday" type="date" /><br/>
-      <input id="birthtime" type="time" /><br/>
-      <button onclick="signup()">Sign Up</button>
-      <button onclick="login()">Login</button>
-    `;
-  } else {
-    authBox.innerHTML = `<p>Signed in as ${user.email}</p>`;
-  }
+function generateWord(date) {
+  const words = [
+    "Initiation","Courage","Integration","Rebirth",
+    "Surrender","Momentum","Discipline","Clarity"
+  ];
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+  return words[dayOfYear % words.length];
 }
 
-onAuthStateChanged(auth, (user) => {
-  renderAuth(user);
-  if (user) loadEntries();
-});
-
-/* ---------- AUTH FUNCTIONS ---------- */
-
-window.signup = async function() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const birthday = document.getElementById("birthday").value;
-  const birthtime = document.getElementById("birthtime").value;
-
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await setDoc(doc(db, "users", user.uid), {
-    birthday,
-    birthtime
-  });
-};
-
-window.login = async function() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  await signInWithEmailAndPassword(auth, email, password);
-};
-
-window.logout = function() {
-  signOut(auth);
-};
-
-/* ---------- SAVE ENTRIES ---------- */
-
-window.saveEntry = async function() {
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Create account first.");
-    return;
-  }
-
-  const text = journal.value.trim();
-  if (!text) return;
-
-  await addDoc(collection(db, "users", user.uid, "entries"), {
-    date: new Date(),
-    text
-  });
-
-  journal.value = "";
-  loadEntries();
-};
-
-async function loadEntries() {
-  reflectionsList.innerHTML = "";
-  const user = auth.currentUser;
-  const querySnapshot = await getDocs(collection(db, "users", user.uid, "entries"));
-  querySnapshot.forEach(docSnap => {
-    const div = document.createElement("div");
-    div.innerText = docSnap.data().date.toDate().toDateString();
-    div.onclick = () => alert(docSnap.data().text);
-    reflectionsList.appendChild(div);
-  });
+function changeDay(offset) {
+  currentDate.setDate(currentDate.getDate() + offset);
+  loadDay(currentDate);
 }
 
-window.showTab = function(tab) {
-  if (tab === "journal") {
-    document.getElementById("journalTab").style.display = "block";
-  }
-};
+function saveEntry() {
+  const text = document.getElementById("journal").value;
+  if (!text) return alert("Write something first.");
+  localStorage.setItem(formatDate(currentDate), text);
+  alert("Saved locally.");
+}
+
+loadDay(currentDate);
 </script>
 
 </body>
