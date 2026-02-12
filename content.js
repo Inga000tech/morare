@@ -91,3 +91,61 @@ export function getIntegrationText(date) {
     meaning: "No major celestial shift today. The work is internal. The transformation is subtle. Integration is where growth becomes permanent."
   };
 }
+
+// ... keep your astrologyEvents2026 object at the top ...
+
+export const dailyQuestions = [
+  "What does my 'inner child' need to feel safe today?",
+  "What is one noise or distraction I can eliminate this morning?",
+  "If I were my own best friend, what encouragement would I give myself right now?",
+  "Which 'inner critic' voice is loudest today, and what is its name?",
+  "What would 'good enough' look like for today?",
+  "What is a 'micro-win' I can celebrate by 10:00 AM?",
+  "If today were a movie, what would the genre be?",
+  "What is one 'No' I need to say to protect my 'Yes'?",
+  "What part of 'Future Me' am I building this morning?",
+  "If I had 20% more courage today, what would I do differently?",
+  "What is one boundary I need to reinforce today?",
+  "What is the 'theme song' for my intentions today?",
+  "How can I show up authentically in my first meeting/interaction?",
+  "What is one thing I’m doing today purely because I want to?",
+  "What legacy—even a tiny one—do I want to leave by tonight?",
+  "What am I currently avoiding that needs my attention?",
+  "What emotion am I trying to 'fix' rather than feel?",
+  "Where am I seeking validation from others today?",
+  "What is one 'shadow' trait (like envy or pride) that might pop up today?",
+  "How am I subconsciously making things harder for myself?",
+  "What is the most honest thing I could say to myself right now?",
+  "What am I 'hiding' behind my busyness?",
+  "What would happen if I didn't try to be 'perfect' today?",
+  "What is the 'unspoken' need behind my current stress?",
+  "What is one thing I’m looking forward to in the next 12 hours?",
+  "What is a 'tiny luxury' I can grant myself today?",
+  "What is something beautiful I saw within five minutes of waking up?",
+  "How can I add a moment of 'play' to my afternoon?",
+  "What is one thing about my physical space that I appreciate?",
+  "What is a strength of mine that I often overlook?",
+  "If I were a character in a book, what would the narrator say about me today?",
+  "What is one 'soul-nourishing' food or drink I’ll have today?",
+  "What is a question I hope someone asks me today?",
+  "What is the 'one word' that defines my intention for this day?"
+];
+
+/**
+ * Gets a unique question for the day based on the date
+ */
+export function getDailyQuestion(dateString) {
+  const date = new Date(dateString);
+  // This creates a unique index based on the day of the year
+  const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / 86400000);
+  const index = dayOfYear % dailyQuestions.length;
+  return dailyQuestions[index];
+}
+
+// Keep your existing getIntegrationText function below
+export function getIntegrationText(date) {
+  return {
+    title: "Integration Period",
+    meaning: "No major celestial shift today. The work is internal. The transformation is subtle. Integration is where growth becomes permanent."
+  };
+}
