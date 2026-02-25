@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morare — Daily Ritual</title>
+<meta name="description" content="A daily one-page ritual built around real human courage.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IM+Fell+English:ital@0;1&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper:        #f6f1e9;
+  --paper-shadow: #d5c9a7;
+  --ink:          #2b2316;
+  --ink-light:    #564d38;
+  --ink-faint:    #9b8e73;
+  --accent:       #7a3b1e;
+  --accent-soft:  #b85c38;
+  --ruled:        #d8cfb6;
+  --gold:         #8b6a14;
+  --spine-dk:     #3e2e1e;
+  --spine-md:     #6b4e30;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  min-height:100vh;
+  background:#b2a68c;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 12% 40%,#a09070 0%,transparent 65%),
+    radial-gradient(ellipse 60% 80% at 88% 70%,#c8bc9c 0%,transparent 60%);
+  font-family:'Lora',Georgia,serif;
+  display:flex;flex-direction:column;align-items:center;
+  padding:2.5rem 1rem 5rem;
+}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:998;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.033'/%3E%3C/svg%3E");
+}
+
+/* ── BOOK ── */
+.book-wrapper{position:relative;width:100%;max-width:760px;filter:drop-shadow(0 10px 50px rgba(0,0,0,.38)) drop-shadow(0 2px 8px rgba(0,0,0,.22));z-index:1}
+.spine{position:absolute;left:-24px;top:0;bottom:0;width:24px;background:linear-gradient(to right,var(--spine-dk) 0%,var(--spine-md) 45%,#9a7a50 72%,var(--spine-md) 100%);border-radius:4px 0 0 4px;display:flex;align-items:center;justify-content:center}
+.spine-text{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'IM Fell English',serif;font-size:9px;letter-spacing:4px;color:#d4b870;text-transform:uppercase;opacity:.88;user-select:none}
+.page-stack{position:absolute;right:-12px;top:4px;bottom:4px;width:12px;background:repeating-linear-gradient(to right,#eae0c8 0,#eae0c8 2px,#e0d4b0 2px,#e0d4b0 4px,#d8caa8 4px,#d8caa8 6px,#d2c4a0 6px,#d2c4a0 8px,#ccbe98 8px,#ccbe98 10px);border-radius:0 2px 2px 0}
+
+/* ── PAPER ── */
+.journal{background:var(--paper);position:relative;overflow:hidden;border-radius:0 2px 2px 0}
+.journal::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,var(--ruled) 31px,var(--ruled) 32px);background-position:0 78px;opacity:.42;z-index:0}
+.journal::after{content:'';position:absolute;top:0;bottom:0;left:76px;width:1px;background:linear-gradient(to bottom,transparent,#e8a090 8%,#e8a090 92%,transparent);opacity:.32;pointer-events:none;z-index:0}
+.journal>*{position:relative;z-index:2}
+
+/* ── USER BAR ── */
+.user-bar{display:flex;align-items:center;justify-content:flex-end;gap:.9rem;padding:.52rem 2.5rem .52rem 6rem;border-bottom:1px solid var(--ruled);background:rgba(255,255,255,.1)}
+.user-name{font-family:'Crimson Pro',serif;font-size:.78rem;color:var(--ink-faint);letter-spacing:.5px}
+.user-link{font-family:'Crimson Pro',serif;font-size:.75rem;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;background:none;border:none;cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.user-link:hover{color:var(--accent-soft)}
+
+/* ── HEADER ── */
+.header{padding:2rem 2.5rem 1.3rem 6rem;border-bottom:1px solid var(--ruled)}
+.date-line{font-family:'Crimson Pro',serif;font-size:.73rem;color:var(--ink-faint);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:.32rem}
+.brand{font-family:'IM Fell English',serif;font-size:2.6rem;color:var(--ink);letter-spacing:1px;line-height:1}
+.brand em{font-style:italic;color:var(--accent)}
+.tagline{font-family:'Crimson Pro',serif;font-style:italic;color:var(--ink-faint);font-size:.9rem;margin-top:.22rem}
+
+/* ── NAV ── */
+.nav-tabs{display:flex;padding:0 2.5rem 0 6rem;border-bottom:1px solid var(--ruled);background:rgba(255,255,255,.07)}
+.nav-tab{padding:.62rem 1.25rem;font-family:'Crimson Pro',serif;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--ink-faint);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:color .2s,border-color .2s;user-select:none}
+.nav-tab:hover{color:var(--ink-light)}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── PAGES ── */
+.page{display:none;padding:2.4rem 2.5rem 3.5rem 6rem;min-height:640px;animation:fadeUp .35s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── LOADING / ERROR ── */
+.loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:440px;gap:1.4rem;color:var(--ink-faint)}
+.quill{font-size:2.8rem;animation:bob 1.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:rotate(-12deg) translateY(0)}50%{transform:rotate(6deg) translateY(-5px)}}
+.loading-text{font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;letter-spacing:1px}
+.dot-anim::after{content:'';animation:dots 1.6s steps(4,end) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.error-state{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:440px;gap:1rem;text-align:center}
+.error-state.vis{display:flex}
+.error-msg{font-family:'Crimson Pro',serif;font-style:italic;color:var(--ink-faint);font-size:1rem;max-width:340px;line-height:1.6}
+
+/* ── CONTENT ── */
+.sec-label{font-family:'Crimson Pro',serif;font-size:.68rem;letter-spacing:3px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.65rem}
+hr.div{border:none;border-top:1px solid var(--ruled);margin:2rem 0}
+.story-title{font-family:'IM Fell English',serif;font-size:1.55rem;color:var(--ink);line-height:1.35;margin-bottom:.9rem;max-width:600px}
+.story-body{font-family:'Lora',serif;font-size:.97rem;line-height:1.88;color:var(--ink-light);max-width:580px}
+.story-body p{margin-bottom:.72rem}
+
+/* ── SEE MORE ── */
+.expandable{position:relative;overflow:hidden}
+.expandable.collapsed{max-height:var(--ph,120px)}
+.expandable.collapsed::after{content:'';position:absolute;bottom:0;left:0;right:0;height:52px;background:linear-gradient(to bottom,transparent,var(--paper));pointer-events:none}
+.see-more-btn{display:none;margin-top:.45rem;background:none;border:none;cursor:pointer;font-family:'Crimson Pro',serif;font-style:italic;font-size:.84rem;color:var(--accent);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;padding:0}
+.see-more-btn.show{display:inline-block}
+.see-more-btn:hover{color:var(--accent-soft)}
+
+/* ── WORD ── */
+.word-block{border:1px solid var(--ruled);padding:1.6rem 1.5rem;text-align:center;background:linear-gradient(160deg,rgba(139,106,20,.05),rgba(122,59,30,.03));position:relative;margin:0 -.5rem}
+.word-block::before{content:'✦';position:absolute;top:-.65rem;left:50%;transform:translateX(-50%);background:var(--paper);padding:0 .6rem;color:var(--gold);font-size:.72rem}
+.word-big{display:block;font-family:'IM Fell English',serif;font-size:3.4rem;color:var(--gold);letter-spacing:3px;line-height:1;margin-bottom:.32rem}
+.word-theme-txt{font-family:'Crimson Pro',serif;font-style:italic;color:var(--ink-faint);font-size:.88rem}
+
+/* ── QUOTE / POEM ── */
+.quote-block{padding:.4rem 0 .4rem 1.8rem;border-left:2px solid var(--accent-soft)}
+.quote-text{font-family:'Lora',serif;font-style:italic;font-size:1.05rem;line-height:1.75;color:var(--ink)}
+.quote-attr{font-family:'Crimson Pro',serif;font-size:.8rem;color:var(--ink-faint);margin-top:.5rem}
+.poem-block{padding:.4rem 0 .4rem 1.8rem;border-left:2px dashed var(--paper-shadow)}
+.poem-text{font-family:'Lora',serif;font-style:italic;font-size:.96rem;line-height:1.9;color:var(--ink-light);white-space:pre-line}
+.poem-attr{font-family:'Crimson Pro',serif;font-size:.8rem;color:var(--ink-faint);margin-top:.5rem}
+
+/* ── MONK STORY ── */
+.monk-block{background:rgba(255,255,255,.28);border:1px solid var(--ruled);padding:1.3rem 1.5rem 1.3rem 1.8rem;position:relative}
+.monk-block::before{content:'\201C';position:absolute;top:-.15rem;left:.6rem;font-family:'IM Fell English',serif;font-size:4.5rem;color:var(--paper-shadow);line-height:1;user-select:none}
+.monk-text p{font-family:'Lora',serif;font-size:.95rem;line-height:1.88;color:var(--ink-light);margin-bottom:.7rem}
+.monk-text p:last-child{margin-bottom:0}
+.monk-attr{font-family:'Crimson Pro',serif;font-size:.78rem;color:var(--ink-faint);margin-top:.65rem;font-style:italic}
+
+/* ── REFLECTION ── */
+.reflection-box{font-family:'IM Fell English',serif;font-style:italic;font-size:1.22rem;color:var(--accent);line-height:1.55;padding:1.1rem 1.3rem;border:1px dashed var(--paper-shadow);background:rgba(255,255,255,.3);max-width:580px}
+
+/* ── WRITE ── */
+.write-header{margin-bottom:1.4rem;padding-bottom:.9rem;border-bottom:1px solid var(--ruled)}
+.write-date{font-family:'Crimson Pro',serif;font-size:.76rem;color:var(--ink-faint);letter-spacing:2px;text-transform:uppercase;margin-bottom:.45rem}
+.write-word{font-family:'IM Fell English',serif;font-size:1.12rem;color:var(--gold);margin-bottom:.25rem}
+.write-q{font-family:'Lora',serif;font-style:italic;font-size:.9rem;color:var(--ink-faint);line-height:1.5}
+.journal-textarea{width:100%;min-height:340px;background:transparent;border:none;outline:none;resize:none;font-family:'Lora',serif;font-size:1rem;line-height:32px;color:var(--ink);caret-color:var(--accent);padding:0}
+.journal-textarea::placeholder{color:var(--ink-faint);font-style:italic;opacity:.62}
+.word-count{font-family:'Crimson Pro',serif;font-size:.74rem;color:var(--ink-faint);text-align:right;margin-top:.35rem;letter-spacing:1px}
+
+/* ── BUTTONS ── */
+.action-row{display:flex;align-items:center;gap:1rem;margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--ruled);flex-wrap:wrap}
+.save-note{font-family:'Crimson Pro',serif;font-style:italic;font-size:.78rem;color:var(--ink-faint)}
+.cta-row{display:flex;justify-content:center;padding-top:.4rem}
+.btn{font-family:'Crimson Pro',serif;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;padding:.55rem 1.4rem;border:1px solid var(--accent);background:transparent;color:var(--accent);cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.btn:hover{background:var(--accent);color:var(--paper)}
+.btn.primary{background:var(--accent);color:var(--paper)}
+.btn.primary:hover{background:var(--accent-soft);border-color:var(--accent-soft)}
+.btn.ghost{border-color:var(--paper-shadow);color:var(--ink-faint)}
+.btn.ghost:hover{border-color:var(--ink-faint);color:var(--ink-light);background:transparent}
+
+/* ── LIBRARY ── */
+.entries-grid{display:flex;flex-direction:column;gap:1.05rem}
+.entry-card{border:1px solid var(--ruled);padding:1.05rem 1.35rem;cursor:pointer;transition:background .2s,border-color .2s;background:rgba(255,255,255,.18)}
+.entry-card:hover{background:rgba(255,255,255,.52);border-color:var(--paper-shadow)}
+.ec-date{font-family:'Crimson Pro',serif;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.22rem}
+.ec-word{font-family:'IM Fell English',serif;font-size:1.15rem;color:var(--gold);margin-bottom:.28rem}
+.ec-preview{font-family:'Lora',serif;font-size:.87rem;color:var(--ink-light);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty-msg{text-align:center;padding:4rem 2rem;font-family:'Crimson Pro',serif;font-style:italic;color:var(--ink-faint);font-size:1.02rem;line-height:1.62}
+.full-entry{display:none}
+.full-entry.active{display:block}
+.back-btn{background:none;border:none;font-family:'Crimson Pro',serif;font-size:.76rem;letter-spacing:2px;text-transform:uppercase;color:var(--ink-faint);cursor:pointer;padding:0 0 1.4rem 0;display:inline-flex;align-items:center;gap:.4rem}
+.back-btn:hover{color:var(--accent)}
+.full-entry-text{font-family:'Lora',serif;font-size:1rem;line-height:32px;color:var(--ink-light);white-space:pre-wrap;max-width:580px}
+
+/* ── MODALS ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(44,36,22,.72);z-index:500;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(2px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--paper);max-width:440px;width:100%;padding:2.4rem 2.4rem 2rem;position:relative;box-shadow:0 25px 80px rgba(0,0,0,.45);animation:mIn .3s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(-16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-close{position:absolute;top:1rem;right:1.2rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--ink-faint)}
+.modal-close:hover{color:var(--ink)}
+.modal-title{font-family:'IM Fell English',serif;font-size:1.85rem;color:var(--ink);margin-bottom:.28rem}
+.modal-sub{font-family:'Crimson Pro',serif;font-style:italic;color:var(--ink-faint);font-size:.88rem;margin-bottom:1.5rem;line-height:1.45}
+.form-field{margin-bottom:.95rem}
+.form-label{display:block;font-family:'Crimson Pro',serif;font-size:.7rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.28rem}
+.form-input{width:100%;padding:.56rem .72rem;background:rgba(255,255,255,.45);border:1px solid var(--ruled);border-bottom-color:var(--paper-shadow);font-family:'Lora',serif;font-size:.92rem;color:var(--ink);outline:none;transition:border-bottom-color .2s}
+.form-input:focus{border-bottom-color:var(--accent)}
+.modal-toggle{font-family:'Crimson Pro',serif;font-size:.84rem;color:var(--ink-faint);text-align:center;margin-top:1rem}
+.modal-toggle a{color:var(--accent);cursor:pointer;text-decoration:underline;text-decoration-style:dotted}
+.form-error{font-family:'Crimson Pro',serif;font-size:.82rem;color:#c0392b;margin-top:.4rem;display:none}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--paper);font-family:'Crimson Pro',serif;font-size:.87rem;letter-spacing:1px;padding:.72rem 1.8rem;opacity:0;transition:opacity .3s,transform .3s;z-index:600;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.footer{margin-top:1.8rem;font-family:'Crimson Pro',serif;font-style:italic;font-size:.78rem;color:#7a7060;letter-spacing:1px;text-align:center;z-index:1}
+
+@media(max-width:600px){
+  body{padding:1rem 0 3rem}
+  .spine,.page-stack{display:none}
+  .header,.page{padding-left:2.5rem;padding-right:1.5rem}
+  .nav-tabs,.user-bar{padding-left:2.5rem}
+  .journal::after{left:42px}
+  .word-big{font-size:2.5rem}
+  .brand{font-size:2rem}
+  .action-row{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="book-wrapper">
+  <div class="spine"><span class="spine-text">Morare · Daily Ritual</span></div>
+  <div class="page-stack"></div>
+  <div class="journal">
+
+    <div class="user-bar">
+      <span class="user-name" id="userDisplay">guest — read only</span>
+      <button class="user-link" id="authBtn" onclick="openAuth('signin')">Sign In</button>
+    </div>
+
+    <div class="header">
+      <div class="date-line" id="dateDisplay"></div>
+      <div class="brand">Mo<em>rare</em></div>
+      <div class="tagline">A daily ritual built around real human courage</div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active" data-tab="today" onclick="showTab('today')">Today</button>
+      <button class="nav-tab" data-tab="write" onclick="showTab('write')">Write</button>
+      <button class="nav-tab" data-tab="library" onclick="showTab('library')">Library</button>
+    </div>
+
+    <!-- TODAY -->
+    <div class="page active" id="page-today">
+      <div class="loading-state" id="loadingState">
+        <div class="quill">✒️</div>
+        <div class="loading-text">Searching the archives<span class="dot-anim"></span></div>
+      </div>
+      <div class="error-state" id="errorState">
+        <div style="font-size:1.8rem;opacity:.45">📜</div>
+        <div class="error-msg" id="errorMsg">The archives are quiet. Please try again.</div>
+        <button class="btn" style="margin-top:.5rem" onclick="loadDaily(true)">Try Again</button>
+      </div>
+      <div id="dailyContent" style="display:none">
+
+        <div class="sec-label">This Day in History</div>
+        <div class="story-title" id="storyTitle"></div>
+        <div style="max-width:580px">
+          <div class="expandable collapsed story-body" id="storyExpand" style="--ph:148px">
+            <div id="storyBody"></div>
+          </div>
+          <button class="see-more-btn" id="storyToggle" onclick="toggle('storyExpand','storyToggle')">See more ↓</button>
+        </div>
+
+        <hr class="div">
+
+        <div class="sec-label">Word of the Day</div>
+        <div class="word-block">
+          <span class="word-big" id="wordBig"></span>
+          <div class="word-theme-txt" id="wordTheme"></div>
+        </div>
+
+        <hr class="div">
+
+        <div class="sec-label" id="quoteLbl">A Voice Across Time</div>
+        <div style="max-width:580px">
+          <div class="expandable collapsed" id="quoteExpand" style="--ph:112px">
+            <div id="quoteBlock"></div>
+          </div>
+          <button class="see-more-btn" id="quoteToggle" onclick="toggle('quoteExpand','quoteToggle')">See more ↓</button>
+        </div>
+
+        <hr class="div">
+
+        <div class="sec-label">A Story to Sit With</div>
+        <div style="max-width:580px">
+          <div class="expandable collapsed" id="monkExpand" style="--ph:128px">
+            <div class="monk-block">
+              <div class="monk-text" id="monkText"></div>
+              <div class="monk-attr" id="monkAttr"></div>
+            </div>
+          </div>
+          <button class="see-more-btn" id="monkToggle" onclick="toggle('monkExpand','monkToggle')">See more ↓</button>
+        </div>
+
+        <hr class="div">
+
+        <div class="sec-label">Today's Question</div>
+        <div class="reflection-box" id="reflectionQ"></div>
+
+        <hr class="div">
+        <div class="cta-row">
+          <button class="btn primary" onclick="showTab('write')">Open My Journal →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WRITE -->
+    <div class="page" id="page-write">
+      <div class="write-header">
+        <div class="write-date" id="writeDateDisplay"></div>
+        <div class="write-word" id="writeWord">Loading…</div>
+        <div class="write-q" id="writeQuestion">—</div>
+      </div>
+      <textarea class="journal-textarea" id="journalText"
+        placeholder="Begin here. There are no rules…"
+        oninput="onJournalInput()"></textarea>
+      <div class="word-count" id="wordCount">0 words</div>
+      <div class="action-row">
+        <button class="btn primary" onclick="handleSave()">Save Entry</button>
+        <button class="btn ghost" onclick="exportEntry()">Export .txt</button>
+        <span class="save-note" id="saveNote">Sign in to save permanently</span>
+      </div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div class="page" id="page-library">
+      <div class="full-entry" id="fullEntryView">
+        <button class="back-btn" onclick="closeFullEntry()">← All Entries</button>
+        <div class="write-date" id="feDate"></div>
+        <div class="write-word" id="feWord"></div>
+        <hr class="div" style="margin:1rem 0 1.5rem">
+        <div class="full-entry-text" id="feText"></div>
+        <div class="action-row" style="margin-top:2rem">
+          <button class="btn ghost" onclick="deleteEntry()">Delete This Entry</button>
+        </div>
+      </div>
+      <div id="libraryList">
+        <div class="sec-label" style="margin-bottom:1.25rem">Your Entries</div>
+        <div class="entries-grid" id="entriesGrid"></div>
+      </div>
+    </div>
+
+  </div><!-- /journal -->
+</div><!-- /book-wrapper -->
+
+<div class="footer">Morare &middot; Every day, a new page</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modalTitle">Welcome Back</div>
+    <div class="modal-sub" id="modalSub">Continue your daily ritual</div>
+    <div id="formSignIn">
+      <div class="form-field"><label class="form-label">Email</label><input class="form-input" type="email" id="siEmail" placeholder="you@example.com"></div>
+      <div class="form-field"><label class="form-label">Password</label><input class="form-input" type="password" id="siPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleSignIn()"></div>
+      <div class="form-error" id="siError">Incorrect email or password.</div>
+      <br><button class="btn primary" style="width:100%;padding:.68rem" onclick="handleSignIn()">Sign In</button>
+      <div class="modal-toggle">No account? <a onclick="openAuth('signup')">Create one — free</a></div>
+    </div>
+    <div id="formSignUp" style="display:none">
+      <div class="form-field"><label class="form-label">Your Name</label><input class="form-input" type="text" id="suName" placeholder="First name is fine"></div>
+      <div class="form-field"><label class="form-label">Email</label><input class="form-input" type="email" id="suEmail" placeholder="you@example.com"></div>
+      <div class="form-field"><label class="form-label">Password</label><input class="form-input" type="password" id="suPass" placeholder="6+ characters" onkeydown="if(event.key==='Enter')handleSignUp()"></div>
+      <div class="form-error" id="suError"></div>
+      <br><button class="btn primary" style="width:100%;padding:.68rem" onclick="handleSignUp()">Create Account</button>
+      <div class="modal-toggle">Already have one? <a onclick="openAuth('signin')">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ENTRIES_KEY='morare_entries_v3',USER_KEY='morare_user_v3',USERS_KEY='morare_users_v3',CACHE_PFX='morare_daily_v3';
+let todayData=null,currentUser=null,viewingEntry=null,_pendingSave=false;
+
+document.addEventListener('DOMContentLoaded',()=>{
+  setDates(); restoreUser(); restoreDraft(); renderLibrary(); loadDaily(false);
+});
+
+function setDates(){
+  const d=new Date();
+  const s=d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('dateDisplay').textContent=s;
+  document.getElementById('writeDateDisplay').textContent=s;
+}
+
+// ── SEE MORE ──
+function toggle(expId,btnId){
+  const el=document.getElementById(expId),btn=document.getElementById(btnId);
+  if(el.classList.contains('collapsed')){
+    el.classList.remove('collapsed'); btn.textContent='See less ↑';
+  } else {
+    el.classList.add('collapsed'); btn.textContent='See more ↓';
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+function checkToggle(expId,btnId,ph){
+  const el=document.getElementById(expId),btn=document.getElementById(btnId);
+  el.classList.remove('collapsed');
+  const full=el.scrollHeight;
+  if(full>ph+24){el.classList.add('collapsed');btn.classList.add('show')}
+  else{btn.classList.remove('show')}
+}
+
+// ── TABS ──
+function showTab(n){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+n).classList.add('active');
+  document.querySelector('[data-tab="'+n+'"]').classList.add('active');
+}
+
+// ── DAILY — calls Netlify function ──
+async function loadDaily(force){
+  const today=new Date();
+  const ck=`${CACHE_PFX}_${today.getFullYear()}_${today.getMonth()}_${today.getDate()}`;
+  const cached=localStorage.getItem(ck);
+  showLoading();
+  if(!force&&cached){
+    try{todayData=JSON.parse(cached);renderDaily();return}catch(e){}
+  }
+  try{
+    const res=await fetch('/api/daily',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        month:today.toLocaleString('en-US',{month:'long'}),
+        day:today.getDate(),
+        year:today.getFullYear()
+      })
+    });
+    if(!res.ok){
+      const err=await res.json().catch(()=>({}));
+      throw new Error(err.error||`HTTP ${res.status}`);
+    }
+    todayData=await res.json();
+    localStorage.setItem(ck,JSON.stringify(todayData));
+    renderDaily();
+  } catch(err){
+    console.error('Daily load error:',err);
+    showErr('Could not load today\'s ritual: '+err.message);
+  }
+}
+
+function showLoading(){
+  document.getElementById('loadingState').style.display='flex';
+  document.getElementById('errorState').classList.remove('vis');
+  document.getElementById('dailyContent').style.display='none';
+}
+function showErr(m){
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('errorMsg').textContent=m;
+  document.getElementById('errorState').classList.add('vis');
+  document.getElementById('dailyContent').style.display='none';
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+function renderDaily(){
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('errorState').classList.remove('vis');
+  document.getElementById('dailyContent').style.display='block';
+  document.getElementById('storyTitle').textContent=todayData.storyTitle||'';
+  const bd=document.getElementById('storyBody');bd.innerHTML='';
+  (todayData.storyBody||'').split(/\n+/).filter(Boolean).forEach(p=>{
+    const el=document.createElement('p');el.textContent=p;bd.appendChild(el);
+  });
+  document.getElementById('wordBig').textContent=todayData.word||'';
+  document.getElementById('wordTheme').textContent=todayData.wordTheme||'';
+  const isPoem=(todayData.quoteType||'').toLowerCase()==='poem';
+  document.getElementById('quoteLbl').textContent=isPoem?'A Poem for Today':'A Voice Across Time';
+  const qb=document.getElementById('quoteBlock');
+  if(isPoem){
+    qb.innerHTML=`<div class="poem-block"><div class="poem-text" id="_pt"></div><div class="poem-attr">${esc('— '+(todayData.quoteAttr||''))}</div></div>`;
+    document.getElementById('_pt').textContent=todayData.quoteText||'';
+  } else {
+    qb.innerHTML=`<div class="quote-block"><div class="quote-text">\u201C${esc(todayData.quoteText||'')}\u201D</div><div class="quote-attr">${esc('— '+(todayData.quoteAttr||''))}</div></div>`;
+  }
+  const mt=document.getElementById('monkText');mt.innerHTML='';
+  (todayData.monkStory||'').split(/\n\n+/).filter(Boolean).forEach(p=>{
+    const el=document.createElement('p');el.textContent=p;mt.appendChild(el);
+  });
+  document.getElementById('monkAttr').textContent=todayData.monkAttr||'';
+  document.getElementById('reflectionQ').textContent=todayData.reflectionQuestion||'';
+  document.getElementById('writeWord').textContent='Word: '+(todayData.word||'—');
+  document.getElementById('writeQuestion').textContent=todayData.reflectionQuestion||'—';
+  requestAnimationFrame(()=>{
+    checkToggle('storyExpand','storyToggle',148);
+    checkToggle('quoteExpand','quoteToggle',112);
+    checkToggle('monkExpand','monkToggle',128);
+  });
+}
+
+// ── JOURNAL ──
+function onJournalInput(){
+  const t=document.getElementById('journalText').value;
+  const w=t.trim()?t.trim().split(/\s+/).length:0;
+  document.getElementById('wordCount').textContent=w+(w===1?' word':' words');
+  localStorage.setItem('morare_draft',t);
+}
+function restoreDraft(){
+  const d=localStorage.getItem('morare_draft');
+  if(d){document.getElementById('journalText').value=d;onJournalInput()}
+}
+function handleSave(){
+  const t=document.getElementById('journalText').value.trim();
+  if(!t){toast('Write something first…');return}
+  if(!currentUser){openAuth('signup',true);return}
+  commitSave(t);
+}
+function commitSave(t){
+  const today=new Date(),dk=today.toISOString().split('T')[0];
+  const ds=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const e=getEntries();
+  e[dk]={id:dk,date:ds,word:todayData?.word||'—',question:todayData?.reflectionQuestion||'',text:t,savedAt:new Date().toISOString()};
+  setEntries(e);
+  localStorage.removeItem('morare_draft');
+  document.getElementById('journalText').value='';
+  onJournalInput();renderLibrary();toast('Entry saved ✦');
+}
+function exportEntry(){
+  const t=document.getElementById('journalText').value.trim();
+  if(!t){toast('Nothing to export yet…');return}
+  const today=new Date();
+  const ds=today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const c=['MORARE — Daily Journal','─'.repeat(44),ds,todayData?.word?'Word: '+todayData.word:'','',todayData?.reflectionQuestion||'','','─'.repeat(44),'',t].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([c],{type:'text/plain'}));
+  a.download='morare-'+today.toISOString().split('T')[0]+'.txt';
+  a.click();toast('Exported ✦');
+}
+
+// ── LIBRARY ──
+function getEntries(){try{return JSON.parse(localStorage.getItem(ENTRIES_KEY)||'{}')}catch(e){return{}}}
+function setEntries(e){localStorage.setItem(ENTRIES_KEY,JSON.stringify(e))}
+function renderLibrary(){
+  const e=getEntries(),grid=document.getElementById('entriesGrid');
+  const s=Object.values(e).sort((a,b)=>b.id.localeCompare(a.id));
+  if(!s.length){grid.innerHTML='<div class="empty-msg">Your pages are blank.<br>Write your first entry today.</div>';return}
+  grid.innerHTML=s.map(e=>`<div class="entry-card" onclick="openEntry(${JSON.stringify(e.id)})"><div class="ec-date">${e.date}</div><div class="ec-word">${esc(e.word)}</div><div class="ec-preview">${esc(e.text)}</div></div>`).join('');
+}
+function openEntry(id){
+  const e=getEntries()[id];if(!e)return;
+  viewingEntry=id;
+  document.getElementById('feDate').textContent=e.date;
+  document.getElementById('feWord').textContent='Word: '+e.word;
+  document.getElementById('feText').textContent=e.text;
+  document.getElementById('libraryList').style.display='none';
+  document.getElementById('fullEntryView').classList.add('active');
+}
+function closeFullEntry(){
+  viewingEntry=null;
+  document.getElementById('libraryList').style.display='block';
+  document.getElementById('fullEntryView').classList.remove('active');
+}
+function deleteEntry(){
+  if(!viewingEntry||!confirm('Delete this entry permanently?'))return;
+  const e=getEntries();delete e[viewingEntry];setEntries(e);
+  closeFullEntry();renderLibrary();toast('Entry deleted');
+}
+
+// ── AUTH ──
+function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY)||'{}')}catch(e){return{}}}
+function setUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u))}
+function restoreUser(){try{const u=JSON.parse(localStorage.getItem(USER_KEY));if(u?.email)applyUser(u)}catch(e){}}
+function applyUser(u){
+  currentUser=u;
+  if(u){
+    document.getElementById('userDisplay').textContent=u.name||u.email;
+    document.getElementById('authBtn').textContent='Sign Out';
+    document.getElementById('authBtn').onclick=signOut;
+    document.getElementById('saveNote').textContent='Entries saved to your library';
+  } else {
+    document.getElementById('userDisplay').textContent='guest — read only';
+    document.getElementById('authBtn').textContent='Sign In';
+    document.getElementById('authBtn').onclick=()=>openAuth('signin');
+    document.getElementById('saveNote').textContent='Sign in to save permanently';
+  }
+}
+function openAuth(mode,afterSave=false){
+  _pendingSave=afterSave;
+  document.getElementById('authModal').classList.add('open');
+  document.getElementById('siError').style.display='none';
+  document.getElementById('suError').style.display='none';
+  if(mode==='signin'){
+    document.getElementById('modalTitle').textContent='Welcome Back';
+    document.getElementById('modalSub').textContent=afterSave?'Sign in to save your entry':'Continue your ritual';
+    document.getElementById('formSignIn').style.display='block';
+    document.getElementById('formSignUp').style.display='none';
+  } else {
+    document.getElementById('modalTitle').textContent='Begin Your Journal';
+    document.getElementById('modalSub').textContent=afterSave?'Create a free account to save':'Free, always';
+    document.getElementById('formSignIn').style.display='none';
+    document.getElementById('formSignUp').style.display='block';
+  }
+}
+function closeModal(){document.getElementById('authModal').classList.remove('open')}
+function handleSignIn(){
+  const email=document.getElementById('siEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('siPass').value;
+  const users=getUsers(),err=document.getElementById('siError');
+  if(!users[email]||users[email].password!==pass){err.style.display='block';return}
+  err.style.display='none';
+  const u={email,name:users[email].name};
+  localStorage.setItem(USER_KEY,JSON.stringify(u));
+  applyUser(u);closeModal();toast('Welcome back, '+u.name+' ✦');
+  if(_pendingSave){_pendingSave=false;commitSave(document.getElementById('journalText').value.trim())}
+}
+function handleSignUp(){
+  const name=document.getElementById('suName').value.trim();
+  const email=document.getElementById('suEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('suPass').value;
+  const err=document.getElementById('suError');
+  if(!name){err.textContent='Please enter your name.';err.style.display='block';return}
+  if(!email.includes('@')){err.textContent='A valid email is required.';err.style.display='block';return}
+  if(pass.length<6){err.textContent='Password must be 6+ characters.';err.style.display='block';return}
+  const users=getUsers();
+  if(users[email]){err.textContent='That email is already registered.';err.style.display='block';return}
+  users[email]={name,password:pass};setUsers(users);
+  const u={email,name};localStorage.setItem(USER_KEY,JSON.stringify(u));
+  applyUser(u);closeModal();toast('Welcome to Morare, '+name+' ✦');
+  if(_pendingSave){
+    _pendingSave=false;
+    const d=document.getElementById('journalText').value.trim()||localStorage.getItem('morare_draft')||'';
+    if(d)commitSave(d);
+  }
+}
+function signOut(){currentUser=null;localStorage.removeItem(USER_KEY);applyUser(null);toast('Signed out')}
+
+let _tt;
+function toast(m){
+  const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
